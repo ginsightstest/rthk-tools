@@ -19,8 +19,12 @@ class ProgrammeNameParser:
                 title = re.sub(pattern, '', title)
             return title
 
+        def _remove_episode(title: str) -> str:
+            return re.sub(r'第\s*([^第]+?)\s*集', '', title)
+
         title = _normalize_spaces(title)
         title = _remove_date(title)
+        title = _remove_episode(title)
         title = title.strip()
         try_patterns = [
             # highest precedence
