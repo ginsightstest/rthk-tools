@@ -46,8 +46,8 @@ class ProgrammeNameParser:
         #   we assume common substrings (i.e. substrings that appear more than once among the titles)
         #   are programme names.
         programme_name_counter: Counter[str] = Counter()
-        for filename in titles:
-            programme_name = self.try_extract_programme_name(filename)
+        for title in titles:
+            programme_name = self.try_extract_programme_name(title)
             if programme_name:
                 programme_name_counter[programme_name] += 1
 
