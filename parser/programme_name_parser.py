@@ -10,8 +10,10 @@ class ProgrammeNameParser:
 
         def _remove_date(title: str) -> str:
             for pattern in (
-                    r'\d{1,2}[-_./]\d{1,2}[-_./]\d{2,4}',
-                    r'\d{2,4}[-_./]\d{1,2}[-_./]\d{1,2}',
+                    r'\d{1,2}[-_./ ]\d{1,2}[-_./ ]\d{4}',
+                    r'\d{4}[-_./ ]\d{1,2}[-_./ ]\d{1,2}',
+                    r'\d{1,2}[-_./ ]\d{1,2}[-_./ ]\d{2}',
+                    r'\d{2}[-_./ ]\d{1,2}[-_./ ]\d{1,2}',
                     r'\S+月\S+日',
             ):
                 title = re.sub(pattern, '', title)

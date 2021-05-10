@@ -35,7 +35,7 @@ class YoutubeJsonParser:
 
         title = _remove_spaces(j["fulltitle"])
 
-        match = re.search(r'(\d{1,2})[-_./](\d{1,2})[-_./](\d{4})', title)
+        match = re.search(r'(\d{1,2})[-_./ ](\d{1,2})[-_./ ](\d{4})', title)
         if match:
             day, month, year = tuple(map(int, match.groups()))
             try:
@@ -44,12 +44,12 @@ class YoutubeJsonParser:
                 # Some odd cases e.g. 5-15-2014 議事論事 第三十二集-sVNrYi8kS8c.info.json
                 return date(year=year, month=day, day=month)
 
-        match = re.search(r'(\d{4})[-_./](\d{1,2})[-_./](\d{1,2})', title)
+        match = re.search(r'(\d{4})[-_./ ](\d{1,2})[-_./ ](\d{1,2})', title)
         if match:
             year, month, day = tuple(map(int, match.groups()))
             return date(year=year, month=month, day=day)
 
-        match = re.search(r'(\d{1,2})[-_./](\d{1,2})[-_./](\d{1,2})', title)
+        match = re.search(r'(\d{1,2})[-_./ ](\d{1,2})[-_./ ](\d{1,2})', title)
         if match:
             d1, month, d2 = tuple(map(int, match.groups()))
             year = int(j["upload_date"][:4])  # assume video was uploaded in the same year to Youtube
@@ -97,8 +97,10 @@ class YoutubeJsonParser:
     def _clean_up_title(self, j: dict, programme: Optional[str]) -> str:
         def _remove_date(title: str) -> str:
             for pattern in (
-                    r'\d{1,2}[-_./]\d{1,2}[-_./]\d{2,4}',
-                    r'\d{2,4}[-_./]\d{1,2}[-_./]\d{1,2}',
+                    r'\d{1,2}[-_./ ]\d{1,2}[-_./ ]\d{4}',
+                    r'\d{4}[-_./ ]\d{1,2}[-_./ ]\d{1,2}',
+                    r'\d{1,2}[-_./ ]\d{1,2}[-_./ ]\d{2}',
+                    r'\d{2}[-_./ ]\d{1,2}[-_./ ]\d{1,2}',
             ):
                 title = re.sub(pattern, '', title)
             return title
