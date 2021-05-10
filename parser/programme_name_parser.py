@@ -27,8 +27,11 @@ class ProgrammeNameParser:
 
     def _try_extract_common_programme_name(self, title1: str, title2: str) -> Optional[str]:
         match = longest_common_prefix(title1, title2)
-        if match and not match[0].islower():
-            # If programme name is english, check that it starts with uppercase
+        if (match and
+                # If programme name is english, check that it starts with uppercase
+                not match[0].islower() and
+                # Blacklist common words, e.g. the
+                match.lower().strip() != 'the'):
             return match
         return None
 
