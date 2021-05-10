@@ -72,9 +72,13 @@ class YoutubeJsonParser:
         return None
 
     def _try_extract_programme(self, j: dict) -> Optional[str]:
+        def _normalize_spaces(title: str) -> str:
+            return re.sub(r'\s+', ' ', title)
+
+        title = _normalize_spaces(j["fulltitle"].strip())
         # TODO: This is O(n^2) search, speed this up.
         for programme_name in self._programme_names_sorted_desc_by_length:
-            if programme_name in j["fulltitle"]:
+            if programme_name in title:
                 return programme_name
         return None
 
@@ -95,6 +99,9 @@ class YoutubeJsonParser:
         return None
 
     def _clean_up_title(self, j: dict, programme: Optional[str]) -> str:
+        def _normalize_spaces(title: str) -> str:
+            return re.sub(r'\s+', ' ', title)
+
         def _remove_date(title: str) -> str:
             for pattern in (
                     r'\d{1,2}[-_./ ]\d{1,2}[-_./ ]\d{4}',
@@ -113,7 +120,7 @@ class YoutubeJsonParser:
             # remove leftover punctuations
             return title
 
-        title = j["fulltitle"].strip()
+        title = _normalize_spaces(j["fulltitle"].strip())
         title = _remove_date(title)
         if programme:
             title = _remove_programme_name(title)
