@@ -12,7 +12,7 @@ class YoutubeJsonParser:
     def __init__(self, programme_names: Set[str]):
         self._chinese_num_parser = ChineseNumParser()
         self._programme_name_parser = ProgrammeNameParser()
-        self._programme_names = programme_names
+        self._programme_names_sorted_desc_by_length = list(sorted(programme_names, key=len, reverse=True))
 
     def parse_json(self, j: dict) -> Record:
         programme = self._try_extract_programme(j)
@@ -72,9 +72,10 @@ class YoutubeJsonParser:
         return None
 
     def _try_extract_programme(self, j: dict) -> Optional[str]:
-        programme_name = self._programme_name_parser.try_extract_programme_name(j["fulltitle"])
-        if programme_name and programme_name in self._programme_names:
-            return programme_name
+        # TODO: This is O(n^2) search, speed this up.
+        for programme_name in self._programme_names_sorted_desc_by_length:
+            if programme_name in j["fulltitle"]:
+                return programme_name
         return None
 
     def _try_extract_episode(self, j: dict) -> Optional[int]:
