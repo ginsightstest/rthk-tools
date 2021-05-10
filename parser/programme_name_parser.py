@@ -9,12 +9,12 @@ class ProgrammeNameParser:
     def _try_extract_programme_name(self, title: str) -> Optional[str]:
         try_patterns = [
             # highest precedence
+            r'(.*?)：',
+            r'(.*?):',
             r'^《(.*?)》',
             r'^【(.*)】',
             r'^「(.*)」',
-            r'(.*?)：',
             r'(.*?) – ',
-            r'(.*?):',
             r'(.*?)-',
             r'(.*?)_',
             # lowest precedence
