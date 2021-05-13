@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import glob
+import logging
 import os
 import re
 from dataclasses import dataclass
@@ -11,6 +12,10 @@ from crawler.podcast.programme_list_crawler import ProgrammeListCrawler
 from reader.episodes_csv_reader import EpisodesCsvReader
 from scripts.args import Args
 from writer.episodes_csv_writer import EpisodesCsvWriter
+
+UNSUPPORTED_PIDS = {
+    113  # 視像新聞
+}
 
 
 @dataclass
@@ -55,6 +60,7 @@ async def _crawl_and_save_podcast_site(args: ListPodcastProgrammesArgs):
     working_dir = os.path.abspath(os.path.join(args.csv_out, '..'))
 
     pids_to_crawl = await _determine_pids_to_crawl(args.pids, working_dir=working_dir, sem=sem)
+    logging.info(f'Will crawl pids: {pids_to_crawl}...')
 
     episode_crawler = EpisodeListCrawler(sem)
     all_episodes = []
@@ -76,12 +82,12 @@ async def _determine_pids_to_crawl(pids: List[int], working_dir: os.path, sem: a
         programmes = await ProgrammeListCrawler(sem).list_programmes()
         pids = [programme.pid for programme in programmes]
 
-    skip_pids = [
+    already_done_pids = [
         int(re.search("(\d+)\.rthk\.tmp\.csv", filename).group(1))
         for filename in glob.iglob(os.path.join(working_dir, "*.rthk.tmp.csv"))
     ]
 
-    pids = list(set(pids) - set(skip_pids))
+    pids = list(set(pids) - set(already_done_pids) - UNSUPPORTED_PIDS)
     return pids
 
 

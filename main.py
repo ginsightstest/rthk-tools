@@ -6,7 +6,7 @@ from scripts.list_podcast_programmes import ListPodcastProgrammesArgs
 from scripts.youtube_json_to_csv import YoutubeToJsonArgs
 
 logging.basicConfig()
-logging.getLogger().setLevel(logging.DEBUG)
+logging.getLogger().setLevel(logging.INFO)
 
 
 def main():

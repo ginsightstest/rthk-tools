@@ -33,6 +33,7 @@ class EpisodeListCrawler:
         self._sem = sem
 
     async def list_all_episodes(self, pid: int) -> List[Episode]:
+        logging.info(f'Crawling pid {pid}...')
         years = await self._list_available_years(pid)
 
         episodes_from_xml = await self._list_episodes_xml(pid, years)
