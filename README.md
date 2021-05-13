@@ -5,7 +5,8 @@
 ```sh
 poetry run python3 main.py \
   list-podcast-programmes \
-  --csv-out <path for writing output csv>
+  --csv-out <path for writing output csv> \
+  [--incremental] \
   [--pid <pid> ...]
 ```
 

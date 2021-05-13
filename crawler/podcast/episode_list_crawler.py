@@ -1,14 +1,14 @@
 import asyncio
 import logging
 import re
-from datetime import date, datetime
+from datetime import date
 from typing import Dict, List, NamedTuple
 
 import xmltodict
 from bs4 import BeautifulSoup
 
 from crawler.podcast import client
-from util.dates import duration_to_seconds
+from util.dates import duration_to_seconds, ymd_to_date
 from util.lists import flatten
 
 
@@ -63,10 +63,12 @@ class EpisodeListCrawler:
             ]
             return merged_episodes
 
-        return _merge(
+        all_episodes = _merge(
             episodes_from_xml,
             episodes_from_html
         )
+        logging.info(f'Got {len(all_episodes)} episodes for pid {pid}')
+        return all_episodes
 
     async def _list_available_years(self, pid: int) -> List[int]:
         html = await client.get(
@@ -74,7 +76,9 @@ class EpisodeListCrawler:
             sem=self._sem
         )
         soup = BeautifulSoup(html, features="lxml")
-        years = [option['value'] for option in soup.select('#switch-years > option')]
+        years = [int(option['value'])
+                 for option in soup.select('#switch-years > option')
+                 if int(option['value']) > 1900]  # Filter out invalid years, e.g. 0000
         logging.debug(f'pid {pid} has available years: {years}')
         return years
 
@@ -83,12 +87,12 @@ class EpisodeListCrawler:
             xml = await client.get(
                 f'https://podcast.rthk.hk/podcast/episodeList.php?pid={pid}&year={year}&display=all',
                 sem=self._sem)
-            root = xmltodict.parse(xml)
+            root = xmltodict.parse(xml, force_list={'episode'})
             return [Episode(
                 pid=int(e['pid']),
                 eid=int(e['eid']),
                 episode_title=e['episodeTitle'],
-                episode_date=datetime.strptime(e['episodeDate'], '%Y-%m-%d'),
+                episode_date=ymd_to_date(e['episodeDate']),
                 duration_seconds=duration_to_seconds(e['duration']),
                 file_url=e['mediafile'],
                 format=e['format']
@@ -105,27 +109,40 @@ class EpisodeListCrawler:
                 f'https://podcast.rthk.hk/podcast/item.php?pid={pid}&eid={eid}',
                 sem=self._sem)
             soup = BeautifulSoup(html, features="lxml")
-            programme_title = soup.select_one(
-                '#prog-detail > div > div.prog-box > div.prog-box-title > div.prog-title > h2').get_text()
-            og_title = soup.select_one('meta[property="og:title"]')['content']
-            og_description = soup.select_one('meta[property="og:description"]')['content']
-            category_divs = soup.select(
-                '#prog-detail > div > div.prog-box > div.prog-box-info > ul > li:nth-child(3) > a')
-            cids = [int(re.fullmatch(r'category.php\?cid=(\d+)&lang=zh-CN', div['href']).group(1))
-                    for div in category_divs]
-            category_names = [div.get_text() for div in category_divs]
-            m3u8_url = re.search(f'[^"]+\.m3u8', html) and re.search(f'[^"]+\.m3u8', html).group()
-            logging.debug(f'Got html episode info for (pid, eid) = ({pid}, {eid})')
-            return Episode(
-                pid=pid,
-                eid=eid,
-                programme_title=programme_title,
-                og_title=og_title,
-                og_description=og_description,
-                cids=cids,
-                category_names=category_names,
-                m3u8_url=m3u8_url
-            )
+            try:
+                programme_title = soup.select_one(
+                    '#prog-detail > div > div.prog-box > div.prog-box-title > div.prog-title > h2').get_text()
+                og_title = soup.select_one('meta[property="og:title"]')['content']
+                og_description = soup.select_one('meta[property="og:description"]')['content']
+                category_divs = soup.select(
+                    '#prog-detail > div > div.prog-box > div.prog-box-info > ul > li:nth-child(3) > a')
+                cids = [int(re.fullmatch(r'category.php\?cid=(\d+)&lang=zh-CN', div['href']).group(1))
+                        for div in category_divs]
+                category_names = [div.get_text() for div in category_divs]
+                m3u8_url = re.search(f'[^"]+\.m3u8', html) and re.search(f'[^"]+\.m3u8', html).group()
+                logging.debug(f'Got html episode info for (pid, eid) = ({pid}, {eid})')
+                return Episode(
+                    pid=pid,
+                    eid=eid,
+                    programme_title=programme_title,
+                    og_title=og_title,
+                    og_description=og_description,
+                    cids=cids,
+                    category_names=category_names,
+                    m3u8_url=m3u8_url
+                )
+            except:
+                logging.warning(f'Failed to get html episode info for (pid, eid) = ({pid}, {eid})', exc_info=True)
+                return Episode(
+                    pid=pid,
+                    eid=eid,
+                    programme_title=None,
+                    og_title=None,
+                    og_description=None,
+                    cids=None,
+                    category_names=None,
+                    m3u8_url=None
+                )
 
         episodes = await asyncio.gather(*map(_get_episode_info, eids))
         return list(episodes)

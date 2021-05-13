@@ -5,7 +5,7 @@ import aiohttp
 
 async def get(url: str, sem: asyncio.Semaphore):
     """
-    >>> '<!doctype html>' in asyncio.run(get('http://google.com'))
+    >>> '<!doctype html>' in asyncio.run(get('http://google.com', sem=asyncio.Semaphore()))
     True
     """
     async with sem:

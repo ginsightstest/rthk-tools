@@ -35,7 +35,7 @@ class ProgrammeListCrawler:
             xml = await client.get(
                 f'https://podcast.rthk.hk/podcast/programmeList.php?type=all&page={page}&order=hot&lang=zh-CN',
                 sem=self._sem)
-            root = xmltodict.parse(xml)
+            root = xmltodict.parse(xml, force_list={'programme'})
             logging.debug(f'Got programmes in page: {page}')
             return [Programme(
                 pid=int(p['link'].removeprefix('item.php?pid=')),
