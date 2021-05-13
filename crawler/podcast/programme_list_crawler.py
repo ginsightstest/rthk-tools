@@ -1,18 +1,13 @@
 import asyncio
 import logging
 import math
-from typing import List, NamedTuple
+from typing import List
 
 import xmltodict
 
 from crawler.podcast import client
+from model.podcast.programme import Programme
 from util.lists import flatten
-
-
-class Programme(NamedTuple):
-    pid: int  # programme id
-    title: str
-    format: str  # 'video' / 'audio'
 
 
 class ProgrammeListCrawler:

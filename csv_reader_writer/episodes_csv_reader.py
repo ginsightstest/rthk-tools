@@ -3,7 +3,7 @@ from typing import List
 
 import pandas as pd
 
-from crawler.podcast.episode_list_crawler import Episode
+from model.podcast.episode import Episode
 
 
 class EpisodesCsvReader:

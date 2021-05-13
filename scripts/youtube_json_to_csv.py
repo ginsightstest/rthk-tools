@@ -7,11 +7,11 @@ from typing import Dict, Iterable, List, Set
 
 import ujson
 
+from csv_reader_writer.records_csv_writer import RecordsCsvWriter
 from model.youtube.record import Record
 from parser.programme_name_parser import ProgrammeNameParser
 from parser.youtube.youtube_json_parser import YoutubeJsonParser
 from scripts.args import Args
-from writer.records_csv_writer import RecordsCsvWriter
 
 
 @dataclass

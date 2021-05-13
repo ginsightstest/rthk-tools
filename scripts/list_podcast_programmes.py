@@ -7,11 +7,12 @@ import re
 from dataclasses import dataclass
 from typing import List
 
-from crawler.podcast.episode_list_crawler import Episode, EpisodeListCrawler
+from crawler.podcast.episode_list_crawler import EpisodeListCrawler
 from crawler.podcast.programme_list_crawler import ProgrammeListCrawler
-from reader.episodes_csv_reader import EpisodesCsvReader
+from csv_reader_writer.episodes_csv_reader import EpisodesCsvReader
+from csv_reader_writer.episodes_csv_writer import EpisodesCsvWriter
+from model.podcast.episode import Episode
 from scripts.args import Args
-from writer.episodes_csv_writer import EpisodesCsvWriter
 
 UNSUPPORTED_PIDS = {
     113  # 視像新聞

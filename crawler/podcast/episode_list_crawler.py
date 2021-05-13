@@ -1,31 +1,15 @@
 import asyncio
 import logging
 import re
-from datetime import date
-from typing import Dict, List, NamedTuple
+from typing import Dict, List
 
 import xmltodict
 from bs4 import BeautifulSoup
 
 from crawler.podcast import client
+from model.podcast.episode import Episode
 from util.dates import duration_to_seconds, ymd_to_date
 from util.lists import flatten
-
-
-class Episode(NamedTuple):
-    pid: int  # programme id
-    eid: int  # episode id
-    programme_title: str = None
-    episode_title: str = None
-    episode_date: date = None
-    duration_seconds: int = None
-    og_title: str = None
-    og_description: str = None
-    cids: List[int] = None  # category id
-    category_names: List[str] = None
-    file_url: str = None
-    m3u8_url: str = None  # 250000:  256x144 , 400000:  432x240 , 700000:  640x360 , 1000000: 848x480 , 2000000: 1280x720
-    format: str = None  # 'video' / 'audio'
 
 
 class EpisodeListCrawler:
