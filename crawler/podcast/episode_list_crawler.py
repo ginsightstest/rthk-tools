@@ -1,0 +1,131 @@
+import asyncio
+import logging
+import re
+from datetime import date, datetime
+from typing import Dict, List, NamedTuple
+
+import xmltodict
+from bs4 import BeautifulSoup
+
+from crawler.podcast import client
+from util.dates import duration_to_seconds
+from util.lists import flatten
+
+
+class Episode(NamedTuple):
+    pid: int  # programme id
+    eid: int  # episode id
+    programme_title: str = None
+    episode_title: str = None
+    episode_date: date = None
+    duration_seconds: int = None
+    og_title: str = None
+    og_description: str = None
+    cids: List[int] = None  # category id
+    category_names: List[str] = None
+    file_url: str = None
+    m3u8_url: str = None  # 250000:  256x144 , 400000:  432x240 , 700000:  640x360 , 1000000: 848x480 , 2000000: 1280x720
+    format: str = None  # 'video' / 'audio'
+
+
+class EpisodeListCrawler:
+    def __init__(self, sem: asyncio.Semaphore):
+        self._sem = sem
+
+    async def list_all_episodes(self, pid: int) -> List[Episode]:
+        years = await self._list_available_years(pid)
+
+        episodes_from_xml = await self._list_episodes_xml(pid, years)
+        eids = [episode.eid for episode in episodes_from_xml]
+
+        episodes_from_html = await self._list_episodes_html(pid, eids)
+
+        def _merge(episodes_from_xml: List[Episode], episodes_from_html: List[Episode]) -> List[Episode]:
+            xml_episodes_grouped_by_pid_eid: Dict[(int, int), Episode] = {(e.pid, e.eid): e for e in episodes_from_xml}
+            html_episodes_grouped_by_pid_eid: Dict[(int, int), Episode] = {(e.pid, e.eid): e for e in
+                                                                           episodes_from_html}
+            merged_episodes = [
+                Episode(
+                    pid=pid,
+                    eid=eid,
+                    programme_title=html_episodes_grouped_by_pid_eid[(pid, eid)].programme_title,
+                    episode_title=xml_episodes_grouped_by_pid_eid[(pid, eid)].episode_title,
+                    episode_date=xml_episodes_grouped_by_pid_eid[(pid, eid)].episode_date,
+                    duration_seconds=xml_episodes_grouped_by_pid_eid[(pid, eid)].duration_seconds,
+                    og_title=html_episodes_grouped_by_pid_eid[(pid, eid)].og_title,
+                    og_description=html_episodes_grouped_by_pid_eid[(pid, eid)].og_description,
+                    cids=html_episodes_grouped_by_pid_eid[(pid, eid)].cids,
+                    category_names=html_episodes_grouped_by_pid_eid[(pid, eid)].category_names,
+                    file_url=xml_episodes_grouped_by_pid_eid[(pid, eid)].file_url,
+                    m3u8_url=html_episodes_grouped_by_pid_eid[(pid, eid)].m3u8_url,
+                    format=xml_episodes_grouped_by_pid_eid[(pid, eid)].format
+                ) for (pid, eid) in xml_episodes_grouped_by_pid_eid.keys()
+            ]
+            return merged_episodes
+
+        return _merge(
+            episodes_from_xml,
+            episodes_from_html
+        )
+
+    async def _list_available_years(self, pid: int) -> List[int]:
+        html = await client.get(
+            f'https://podcast.rthk.hk/podcast/item.php?pid={pid}&lang=zh-CN',
+            sem=self._sem
+        )
+        soup = BeautifulSoup(html, features="lxml")
+        years = [option['value'] for option in soup.select('#switch-years > option')]
+        logging.debug(f'pid {pid} has available years: {years}')
+        return years
+
+    async def _list_episodes_xml(self, pid: int, years: List[int]) -> List[Episode]:
+        async def _list_episodes_in_year(year: int) -> List[Episode]:
+            xml = await client.get(
+                f'https://podcast.rthk.hk/podcast/episodeList.php?pid={pid}&year={year}&display=all',
+                sem=self._sem)
+            root = xmltodict.parse(xml)
+            return [Episode(
+                pid=int(e['pid']),
+                eid=int(e['eid']),
+                episode_title=e['episodeTitle'],
+                episode_date=datetime.strptime(e['episodeDate'], '%Y-%m-%d'),
+                duration_seconds=duration_to_seconds(e['duration']),
+                file_url=e['mediafile'],
+                format=e['format']
+            ) for e in root['episodeList']['episode']]
+
+        nested_episodes = await asyncio.gather(*map(_list_episodes_in_year, years))
+        episodes = flatten(nested_episodes)
+        logging.debug(f'Found {len(episodes)} xml episodes for pid {pid} and years {years}')
+        return episodes
+
+    async def _list_episodes_html(self, pid: int, eids: List[int]) -> List[Episode]:
+        async def _get_episode_info(eid: int) -> Episode:
+            html = await client.get(
+                f'https://podcast.rthk.hk/podcast/item.php?pid={pid}&eid={eid}',
+                sem=self._sem)
+            soup = BeautifulSoup(html, features="lxml")
+            programme_title = soup.select_one(
+                '#prog-detail > div > div.prog-box > div.prog-box-title > div.prog-title > h2').get_text()
+            og_title = soup.select_one('meta[property="og:title"]')['content']
+            og_description = soup.select_one('meta[property="og:description"]')['content']
+            category_divs = soup.select(
+                '#prog-detail > div > div.prog-box > div.prog-box-info > ul > li:nth-child(3) > a')
+            cids = [int(re.fullmatch(r'category.php\?cid=(\d+)&lang=zh-CN', div['href']).group(1))
+                    for div in category_divs]
+            category_names = [div.get_text() for div in category_divs]
+            m3u8_url = re.search(f'[^"]+\.m3u8', html) and re.search(f'[^"]+\.m3u8', html).group()
+            logging.debug(f'Got html episode info for (pid, eid) = ({pid}, {eid})')
+            return Episode(
+                pid=pid,
+                eid=eid,
+                programme_title=programme_title,
+                og_title=og_title,
+                og_description=og_description,
+                cids=cids,
+                category_names=category_names,
+                m3u8_url=m3u8_url
+            )
+
+        episodes = await asyncio.gather(*map(_get_episode_info, eids))
+        return list(episodes)

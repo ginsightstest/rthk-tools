@@ -3,7 +3,7 @@ import re
 from datetime import date
 from typing import Optional, Set
 
-from model.record import Record
+from model.youtube.record import Record
 from parser.chinese_num_parser import ChineseNumParser
 from parser.programme_name_parser import ProgrammeNameParser
 

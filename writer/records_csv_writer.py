@@ -3,7 +3,7 @@ from typing import Collection
 
 import pandas as pd
 
-from model.record import Record
+from model.youtube.record import Record
 
 
 class RecordsCsvWriter:

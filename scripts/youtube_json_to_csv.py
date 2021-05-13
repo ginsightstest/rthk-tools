@@ -7,7 +7,7 @@ from typing import Dict, Iterable, List, Set
 
 import ujson
 
-from model.record import Record
+from model.youtube.record import Record
 from parser.programme_name_parser import ProgrammeNameParser
 from parser.youtube.youtube_json_parser import YoutubeJsonParser
 from scripts.args import Args
@@ -36,15 +36,15 @@ def parse_args(raw_args: argparse.Namespace) -> YoutubeToJsonArgs:
 
 
 def run(args: YoutubeToJsonArgs):
-    raw_youtube_jsons = load_raw_youtube_json_files(args.youtube_json_dir)
-    programme_names_with_counts = collect_programme_names_with_counts(raw_youtube_jsons)
-    records = parse_records_from_raw_youtube_jsons(
+    raw_youtube_jsons = _load_raw_youtube_json_files(args.youtube_json_dir)
+    programme_names_with_counts = _collect_programme_names_with_counts(raw_youtube_jsons)
+    records = _parse_records_from_raw_youtube_jsons(
         raw_youtube_jsons,
         programme_names=set(programme_names_with_counts.keys()))
     RecordsCsvWriter(records).write_to_csv(args.csv_out)
 
 
-def load_raw_youtube_json_files(youtube_json_dir: str) -> List[Dict]:
+def _load_raw_youtube_json_files(youtube_json_dir: str) -> List[Dict]:
     paths = glob.glob(os.path.join(youtube_json_dir, "*.json"))
     raw_youtube_jsons = []
     progress, total = 0, len(paths)
@@ -60,7 +60,7 @@ def load_raw_youtube_json_files(youtube_json_dir: str) -> List[Dict]:
     return raw_youtube_jsons
 
 
-def collect_programme_names_with_counts(raw_youtube_jsons: Iterable[Dict]) -> Dict[str, int]:
+def _collect_programme_names_with_counts(raw_youtube_jsons: Iterable[Dict]) -> Dict[str, int]:
     titles = [json["fulltitle"] for json in raw_youtube_jsons]
     programme_names_with_counts = ProgrammeNameParser() \
         .collect_programme_names_with_counts(titles)
@@ -68,6 +68,6 @@ def collect_programme_names_with_counts(raw_youtube_jsons: Iterable[Dict]) -> Di
     return programme_names_with_counts
 
 
-def parse_records_from_raw_youtube_jsons(raw_youtube_jsons: Iterable[Dict], programme_names: Set[str]) -> List[Record]:
+def _parse_records_from_raw_youtube_jsons(raw_youtube_jsons: Iterable[Dict], programme_names: Set[str]) -> List[Record]:
     youtube_json_parser = YoutubeJsonParser(programme_names=programme_names)
     return [youtube_json_parser.parse_json(json) for json in raw_youtube_jsons]
