@@ -1,6 +1,8 @@
 import argparse
 import sys
 
+from scripts import download_podcast
+
 
 class Args:
     pass
@@ -18,6 +20,9 @@ def parse_args() -> Args:
     subparsers = parser.add_subparsers(required=True, dest='subcommand')
 
     from scripts import list_podcast_programmes, youtube_json_to_csv
+    download_podcast.configure(
+        subparsers.add_parser('download-podcast', help='Download podcast files')
+    )
     list_podcast_programmes.configure(
         subparsers.add_parser('list-podcast-programmes', help='List podcast programmes')
     )
@@ -26,6 +31,8 @@ def parse_args() -> Args:
 
     args = parser.parse_args()
 
+    if args.subcommand == 'download-podcast':
+        return download_podcast.parse_args(args)
     if args.subcommand == 'list-podcast-programmes':
         return list_podcast_programmes.parse_args(args)
     elif args.subcommand == 'youtube-json-to-csv':

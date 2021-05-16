@@ -12,6 +12,7 @@ from model.youtube.record import Record
 from parser.programme_name_parser import ProgrammeNameParser
 from parser.youtube.youtube_json_parser import YoutubeJsonParser
 from scripts.args import Args
+from util.paths import to_abs_path
 
 
 @dataclass
@@ -26,7 +27,7 @@ def configure(parser: argparse.ArgumentParser):
 
 
 def parse_args(raw_args: argparse.Namespace) -> YoutubeToJsonArgs:
-    youtube_json_dir, csv_out = raw_args.youtube_json_dir, raw_args.csv_out
+    youtube_json_dir, csv_out = to_abs_path(raw_args.youtube_json_dir), raw_args.csv_out
     if not os.path.isdir(youtube_json_dir):
         raise argparse.ArgumentError(None, f"--youtube-json-dir is not a directory: {youtube_json_dir}")
     return YoutubeToJsonArgs(

@@ -12,6 +12,9 @@ ujson = "^4.0.2"
 xmltodict = "^0.12.0"
 beautifulsoup4 = "^4.9.3"
 lxml = "^4.6.3"
+aiofiles = { git = "https://github.com/Tinche/aiofiles.git" }
+ffmpeg-python = "^0.2.0"
+tqdm = "^4.60.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"

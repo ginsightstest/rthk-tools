@@ -13,6 +13,7 @@ from csv_reader_writer.episodes_csv_reader import EpisodesCsvReader
 from csv_reader_writer.episodes_csv_writer import EpisodesCsvWriter
 from model.podcast.episode import Episode
 from scripts.args import Args
+from util.paths import to_abs_path
 
 UNSUPPORTED_PIDS = {
     113  # 視像新聞
@@ -41,7 +42,7 @@ def parse_args(raw_args: argparse.Namespace) -> ListPodcastProgrammesArgs:
     pid = raw_args.pid
 
     return ListPodcastProgrammesArgs(
-        csv_out=csv_out,
+        csv_out=to_abs_path(csv_out),
         incremental=incremental,
         parallelism=parallelism,
         pids=pid
@@ -58,7 +59,7 @@ def run(args: ListPodcastProgrammesArgs):
 
 async def _crawl_and_save_podcast_site(args: ListPodcastProgrammesArgs):
     sem = asyncio.Semaphore(args.parallelism)
-    working_dir = os.path.abspath(os.path.join(args.csv_out, '..'))
+    working_dir = to_abs_path(os.path.join(args.csv_out, '..'))
 
     pids_to_crawl = await _determine_pids_to_crawl(args.pids, working_dir=working_dir, sem=sem)
     logging.info(f'Will crawl pids: {pids_to_crawl}...')
@@ -69,7 +70,8 @@ async def _crawl_and_save_podcast_site(args: ListPodcastProgrammesArgs):
         episodes_for_pid = await episode_crawler.list_all_episodes(pid)
         if args.incremental:
             EpisodesCsvWriter(episodes_for_pid) \
-                .write_to_csv(os.path.abspath(os.path.join(args.csv_out, '..', f'{pid}.rthk.tmp.csv')))
+                .write_to_csv(
+                os.path.join(args.csv_out, '..', f'{pid}.rthk.tmp.csv'))
         else:
             all_episodes.extend(episodes_for_pid)
 

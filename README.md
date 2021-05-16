@@ -1,8 +1,8 @@
 ## Usage
 
-### Get RTHK podcast list
+### Get podcast list
 
-```sh
+```
 poetry run python3 main.py \
   list-podcast-programmes \
   --csv-out <path for writing output csv> \
@@ -10,9 +10,20 @@ poetry run python3 main.py \
   [--pid <pid> ...]
 ```
 
+### Download podcast
+
+```
+poetry run python3 main.py \
+  download-podcast \
+  --out-dir <directory path for writing videos>
+  --csv-in <path to podcast list>
+  [--pid <pid> ...] \
+  [--year <year> ...]
+```
+
 ### Convert youtube json to csv
 
-```sh
+```
 poetry run python3 main.py \
   youtube-json-to-csv \
   --youtube-json-dir <path to directory with *.json files> \
