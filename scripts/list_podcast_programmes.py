@@ -71,7 +71,7 @@ async def _crawl_and_save_podcast_site(args: ListPodcastProgrammesArgs):
         if args.incremental:
             EpisodesCsvWriter(episodes_for_pid) \
                 .write_to_csv(
-                os.path.join(args.csv_out, '..', f'{pid}.rthk.tmp.csv'))
+                to_abs_path(os.path.join(args.csv_out, '..', f'{pid}.rthk.tmp.csv')))
         else:
             all_episodes.extend(episodes_for_pid)
 

@@ -15,4 +15,5 @@ class Episode(NamedTuple):
     category_names: List[str] = None
     file_url: str = None
     m3u8_url: str = None  # 250000:  256x144 , 400000:  432x240 , 700000:  640x360 , 1000000: 848x480 , 2000000: 1280x720
+    rss_url: str = None
     format: str = None  # 'video' / 'audio'
