@@ -7,6 +7,8 @@ import re
 from dataclasses import dataclass
 from typing import List
 
+import tqdm
+
 from crawler.podcast.episode_list_crawler import EpisodeListCrawler
 from crawler.podcast.programme_list_crawler import ProgrammeListCrawler
 from csv_reader_writer.episodes_csv_reader import EpisodesCsvReader
@@ -66,14 +68,16 @@ async def _crawl_and_save_podcast_site(args: ListPodcastProgrammesArgs):
 
     episode_crawler = EpisodeListCrawler(sem)
     all_episodes = []
-    for pid in pids_to_crawl:
-        episodes_for_pid = await episode_crawler.list_all_episodes(pid)
-        if args.incremental:
-            EpisodesCsvWriter(episodes_for_pid) \
-                .write_to_csv(
-                to_abs_path(os.path.join(args.csv_out, '..', f'{pid}.rthk.tmp.csv')))
-        else:
-            all_episodes.extend(episodes_for_pid)
+    with tqdm.tqdm(total=len(pids_to_crawl)) as progress_bar:
+        for pid in pids_to_crawl:
+            episodes_for_pid = await episode_crawler.list_all_episodes(pid)
+            if args.incremental:
+                EpisodesCsvWriter(episodes_for_pid) \
+                    .write_to_csv(
+                    to_abs_path(os.path.join(args.csv_out, '..', f'{pid}.rthk.tmp.csv')))
+            else:
+                all_episodes.extend(episodes_for_pid)
+            progress_bar.update(1)
 
     if args.incremental:
         all_episodes = _combine_incremental_csvs(working_dir)
