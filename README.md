@@ -21,6 +21,16 @@ poetry run python3 main.py \
   [--year <year> ...]
 ```
 
+### Upload to Odysee
+
+```
+poetry run python3 main.py \
+  upload-to-odysee \
+  --upload-dir <directory containing videos to upload> \
+  --csv-in <path to podcast list> \
+  --channel-id <odysee channel id>
+```
+
 ### Convert youtube json to csv
 
 ```
