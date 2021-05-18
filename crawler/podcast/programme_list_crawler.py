@@ -14,10 +14,10 @@ class ProgrammeListCrawler:
     def __init__(self, sem: asyncio.Semaphore):
         self._sem = sem
 
-    async def list_programmes(self) -> List[Programme]:
+    async def list_programmes(self, language: str) -> List[Programme]:
         async def _get_total_pages() -> int:
             xml = await client.get(
-                f'https://podcast.rthk.hk/podcast/programmeList.php?type=all&page=1&order=hot&lang=zh-CN',
+                f'https://podcast.rthk.hk/podcast/programmeList.php?type=all&page=1&order=hot&lang={language}',
                 sem=self._sem)
             root = xmltodict.parse(xml)
             total_series = int(root['programmeList']['total'])
@@ -28,7 +28,7 @@ class ProgrammeListCrawler:
 
         async def _list_programmes_in_page(page: int) -> List[Programme]:
             xml = await client.get(
-                f'https://podcast.rthk.hk/podcast/programmeList.php?type=all&page={page}&order=hot&lang=zh-CN',
+                f'https://podcast.rthk.hk/podcast/programmeList.php?type=all&page={page}&order=hot&lang={language}',
                 sem=self._sem)
             root = xmltodict.parse(xml, force_list={'programme'})
             logging.debug(f'Got programmes in page: {page}')

@@ -21,12 +21,18 @@ UNSUPPORTED_PIDS = {
     113  # 視像新聞
 }
 
+ALL_LANGUAGES = [
+    'zh-CN',
+    'en-US'
+]
+
 
 @dataclass
 class ListPodcastProgrammesArgs(Args):
     csv_out: str
     incremental: bool
     parallelism: int
+    languages: List[str]
     pids: List[int]
 
 
@@ -34,6 +40,7 @@ def configure(parser: argparse.ArgumentParser):
     parser.add_argument('--csv-out', required=True, help='Path for output csv file')
     parser.add_argument('--incremental', default=False, action='store_true', help='Whether to save csvs per pid')
     parser.add_argument('--parallelism', type=int, default=100, help='How many HTTP requests in parallel')
+    parser.add_argument('--lang', nargs='*', choices=ALL_LANGUAGES, default=ALL_LANGUAGES, help='Languages to crawl')
     parser.add_argument('--pid', nargs='*', type=int, default=[], help='pids to crawl')
 
 
@@ -41,12 +48,14 @@ def parse_args(raw_args: argparse.Namespace) -> ListPodcastProgrammesArgs:
     csv_out = raw_args.csv_out
     incremental = raw_args.incremental
     parallelism = raw_args.parallelism
+    lang = raw_args.lang
     pid = raw_args.pid
 
     return ListPodcastProgrammesArgs(
         csv_out=to_abs_path(csv_out),
         incremental=incremental,
         parallelism=parallelism,
+        languages=lang,
         pids=pid
     )
 
@@ -63,7 +72,7 @@ async def _crawl_and_save_podcast_site(args: ListPodcastProgrammesArgs):
     sem = asyncio.Semaphore(args.parallelism)
     working_dir = to_abs_path(os.path.join(args.csv_out, '..'))
 
-    pids_to_crawl = await _determine_pids_to_crawl(args.pids, working_dir=working_dir, sem=sem)
+    pids_to_crawl = await _determine_pids_to_crawl(args.languages, args.pids, working_dir=working_dir, sem=sem)
     logging.info(f'Will crawl pids: {pids_to_crawl}...')
 
     episode_crawler = EpisodeListCrawler(sem)
@@ -84,10 +93,15 @@ async def _crawl_and_save_podcast_site(args: ListPodcastProgrammesArgs):
     EpisodesCsvWriter(all_episodes).write_to_csv(args.csv_out)
 
 
-async def _determine_pids_to_crawl(pids: List[int], working_dir: os.path, sem: asyncio.Semaphore) -> List[int]:
+async def _determine_pids_to_crawl(languages: List[str], pids: List[int], working_dir: os.path,
+                                   sem: asyncio.Semaphore) -> List[int]:
     if not pids:
-        programmes = await ProgrammeListCrawler(sem).list_programmes()
-        pids = [programme.pid for programme in programmes]
+        programme_list_crawler = ProgrammeListCrawler(sem)
+        all_programmes = []
+        for language in languages:
+            programmes = await programme_list_crawler.list_programmes(language)
+            all_programmes.extend(programmes)
+        pids = list(set(programme.pid for programme in all_programmes))
 
     already_done_pids = [
         int(re.search("(\d+)\.rthk\.tmp\.csv", filename).group(1))

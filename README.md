@@ -7,6 +7,7 @@ poetry run python3 main.py \
   list-podcast-programmes \
   --csv-out <path for writing output csv> \
   [--incremental] \
+  [--lang {zh-CN,en-US} ...]
   [--pid <pid> ...]
 ```
 

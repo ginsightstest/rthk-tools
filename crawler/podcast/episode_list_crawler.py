@@ -58,7 +58,7 @@ class EpisodeListCrawler:
 
     async def _list_available_years(self, pid: int) -> List[int]:
         html = await client.get(
-            f'https://podcast.rthk.hk/podcast/item.php?pid={pid}&lang=zh-CN',
+            f'https://podcast.rthk.hk/podcast/item.php?pid={pid}',
             sem=self._sem
         )
         soup = BeautifulSoup(html, features="lxml")
@@ -102,7 +102,7 @@ class EpisodeListCrawler:
                 og_description = soup.select_one('meta[property="og:description"]')['content']
                 category_divs = soup.select(
                     '#prog-detail > div > div.prog-box > div.prog-box-info > ul > li:nth-child(3) > a')
-                cids = [int(re.fullmatch(r'category.php\?cid=(\d+)&lang=zh-CN', div['href']).group(1))
+                cids = [int(re.fullmatch(r'category.php\?cid=(\d+)&lang=.*', div['href']).group(1))
                         for div in category_divs]
                 category_names = [div.get_text() for div in category_divs]
                 m3u8_url = re.search(f'[^"]+\.m3u8', html) and re.search(f'[^"]+\.m3u8', html).group()
