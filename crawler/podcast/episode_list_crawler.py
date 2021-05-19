@@ -44,6 +44,7 @@ class EpisodeListCrawler:
                     file_url=xml_episodes_grouped_by_pid_eid[(pid, eid)].file_url,
                     m3u8_url=html_episodes_grouped_by_pid_eid[(pid, eid)].m3u8_url,
                     rss_url=html_episodes_grouped_by_pid_eid[(pid, eid)].rss_url,
+                    language=html_episodes_grouped_by_pid_eid[(pid, eid)].language,
                     format=xml_episodes_grouped_by_pid_eid[(pid, eid)].format
                 ) for (pid, eid) in xml_episodes_grouped_by_pid_eid.keys()
             ]
@@ -108,6 +109,8 @@ class EpisodeListCrawler:
                 m3u8_url = re.search(f'[^"]+\.m3u8', html) and re.search(f'[^"]+\.m3u8', html).group()
                 rss_url = soup.select_one(
                     '#prog-detail > div > div.prog-box > div.subscribe-divs > div > div > a:nth-child(2)')['href']
+                language = soup.select_one(
+                    '#prog-detail > div > div.prog-box > div.prog-box-info > ul > li:nth-child(2) > span').get_text()
                 logging.debug(f'Got html episode info for (pid, eid) = ({pid}, {eid})')
                 return Episode(
                     pid=pid,
@@ -118,7 +121,8 @@ class EpisodeListCrawler:
                     cids=cids,
                     category_names=category_names,
                     m3u8_url=m3u8_url,
-                    rss_url=rss_url
+                    rss_url=rss_url,
+                    language=language
                 )
             except:
                 logging.warning(f'Failed to get html episode info for (pid, eid) = ({pid}, {eid})', exc_info=True)
@@ -131,7 +135,8 @@ class EpisodeListCrawler:
                     cids=None,
                     category_names=None,
                     m3u8_url=None,
-                    rss_url=None
+                    rss_url=None,
+                    language=None
                 )
 
         episodes = await asyncio.gather(*map(_get_episode_info, eids))
