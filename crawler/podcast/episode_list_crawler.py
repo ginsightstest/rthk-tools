@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import re
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import xmltodict
 from bs4 import BeautifulSoup
@@ -16,7 +16,7 @@ class EpisodeListCrawler:
     def __init__(self, sem: asyncio.Semaphore):
         self._sem = sem
 
-    async def list_all_episodes(self, pid: int) -> List[Episode]:
+    async def list_all_episodes(self, pid: int) -> Tuple[int, List[Episode]]:
         logging.info(f'Crawling pid {pid}...')
         years = await self._list_available_years(pid)
 
@@ -54,7 +54,7 @@ class EpisodeListCrawler:
             episodes_from_html
         )
         logging.info(f'Got {len(all_episodes)} episodes for pid {pid}')
-        return all_episodes
+        return (pid, all_episodes)
 
     async def _list_available_years(self, pid: int) -> List[int]:
         html = await client.get(

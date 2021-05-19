@@ -18,7 +18,8 @@ from scripts.args import Args
 from util.paths import to_abs_path
 
 UNSUPPORTED_PIDS = {
-    113  # 視像新聞
+    113,  # 視像新聞
+    874  # English Video News
 }
 
 ALL_LANGUAGES = [
@@ -39,7 +40,7 @@ class ListPodcastProgrammesArgs(Args):
 def configure(parser: argparse.ArgumentParser):
     parser.add_argument('--csv-out', required=True, help='Path for output csv file')
     parser.add_argument('--incremental', default=False, action='store_true', help='Whether to save csvs per pid')
-    parser.add_argument('--parallelism', type=int, default=100, help='How many HTTP requests in parallel')
+    parser.add_argument('--parallelism', type=int, default=20, help='How many HTTP requests in parallel')
     parser.add_argument('--lang', nargs='*', choices=ALL_LANGUAGES, default=ALL_LANGUAGES, help='Languages to crawl')
     parser.add_argument('--pid', nargs='*', type=int, default=[], help='pids to crawl')
 
@@ -78,12 +79,15 @@ async def _crawl_and_save_podcast_site(args: ListPodcastProgrammesArgs):
     episode_crawler = EpisodeListCrawler(sem)
     all_episodes = []
     with tqdm.tqdm(total=len(pids_to_crawl)) as progress_bar:
-        for pid in pids_to_crawl:
-            episodes_for_pid = await episode_crawler.list_all_episodes(pid)
+        for task in asyncio.as_completed(list(map(episode_crawler.list_all_episodes, pids_to_crawl))):
+            pid, episodes_for_pid = await task
             if args.incremental:
-                EpisodesCsvWriter(episodes_for_pid) \
-                    .write_to_csv(
-                    to_abs_path(os.path.join(args.csv_out, '..', f'{pid}.rthk.tmp.csv')))
+                if not episodes_for_pid:
+                    logging.warning(f'No episodes to write for pid: {pid}!')
+                else:
+                    EpisodesCsvWriter(episodes_for_pid) \
+                        .write_to_csv(
+                        to_abs_path(os.path.join(args.csv_out, '..', f'{pid}.rthk.tmp.csv')))
             else:
                 all_episodes.extend(episodes_for_pid)
             progress_bar.update(1)
