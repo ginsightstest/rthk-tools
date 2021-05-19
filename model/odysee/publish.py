@@ -1,13 +1,35 @@
 from typing import List, NamedTuple, Optional
 
 
+class OdyseeChannelCreateApiRequest(NamedTuple):
+    name: str
+    title: str
+    description: str
+    bid: str
+    account_id: Optional[str] = None
+    allow_duplicate_name: bool = False
+    blocking: bool = True
+    claim_address: Optional[str] = None
+    cover_url: Optional[str] = None
+    email: Optional[str] = None
+    featured: List[str] = []
+    funding_account_ids: List[str] = []
+    languages: List[str] = []
+    locations: List[str] = []
+    preview: bool = False
+    tags: List[str] = []
+    thumbnail_url: Optional[str] = None
+    wallet_id: Optional[str] = None
+    website_url: Optional[str] = None
+
+
 class OdyseePublishApiRequest(NamedTuple):
     name: str
     title: str
     description: str
     file_path: str
     channel_id: str
-    bid: float
+    bid: str
     account_id: Optional[str] = None
     author: Optional[str] = None
     blocking: bool = True

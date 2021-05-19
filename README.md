@@ -1,5 +1,14 @@
 ## Usage
 
+### Create Odysee channel
+
+```
+poetry run python3 main.py \
+  create-odysee-channel \
+  --pid <pid> \
+  [--bid <bid>]
+```
+
 ### Get podcast list
 
 ```

@@ -18,7 +18,7 @@ class UploadToOdyseeArgs(Args):
     upload_dir: str
     csv_in: str
     channel_id: str
-    bid: float
+    bid: str
 
 
 def configure(parser: argparse.ArgumentParser):
