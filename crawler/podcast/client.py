@@ -44,9 +44,7 @@ async def get_resumable(url: str,
 
             local_progress_bar = progress_bar
             if not progress_bar:
-                local_progress_bar = tqdm.tqdm(total=int(content_length) / 1024,
-                                               unit='KB',
-                                               desc=f'Downloading {url}')
+                local_progress_bar = tqdm.tqdm(total=int(content_length) / 1024, unit='KB')
 
             if not os.path.exists(write_to_file):
                 async with aiofiles.open(write_to_file, mode='w'):

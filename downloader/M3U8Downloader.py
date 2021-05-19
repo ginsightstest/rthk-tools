@@ -46,9 +46,7 @@ class M3U8Downloader:
             ]
         )
         total_length = sum(content_lengths)
-        progress_bar = tqdm.tqdm(total=int(total_length) / 1024,
-                                 unit='KB',
-                                 desc=f'Downloading {m3u8_url}')
+        progress_bar = tqdm.tqdm(total=int(total_length) / 1024, unit='KB')
         return progress_bar
 
     async def _download_and_save_chunk(self, chunk_num: int, chunk_url: str, out_path: str,
