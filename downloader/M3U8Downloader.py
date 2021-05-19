@@ -74,7 +74,8 @@ class M3U8Downloader:
                     .output(out_path, vcodec='copy', acodec='copy') \
                     .run()
             except Exception as e:
-                os.remove(out_path)
+                if os.path.exists(out_path):
+                    os.remove(out_path)
                 raise e
         for path in chunk_paths:
             os.remove(path)
