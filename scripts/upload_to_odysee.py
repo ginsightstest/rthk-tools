@@ -78,7 +78,9 @@ def _build_publish_requests(args: UploadToOdyseeArgs) -> List[OdyseePublishApiRe
                 file_path=path,
                 channel_id=args.channel_id,
                 bid=args.bid,
-                tags=episode.category_names
+                tags=['RTHK', episode.programme_title] + episode.category_names,
+                thumbnail_url=f'https://podcast.rthk.hk/podcast/upload_photo/item_photo/170x170_{pid}.jpg',
+                languages=['en'] if episode.language == '英文' else ['zh-HK']
             )
             publish_requests.append(publish_request)
     return publish_requests
