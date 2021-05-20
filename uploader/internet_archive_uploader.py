@@ -1,6 +1,7 @@
 import logging
 
 import internetarchive
+import requests
 
 from model.internetarchive.upload import InternetArchiveUploadApiRequest
 
@@ -14,11 +15,24 @@ class InternetArchiveUploader:
             logging.warning(f'Already exists on archive.org: {publish_request.file_path}, not overwriting!')
             return
         metadata = {k: v for k, v in publish_request._asdict().items() if v is not None}
-        resp = internetarchive.upload(
-            publish_request.identifier,
-            files=[publish_request.file_path],
-            metadata=metadata)
-        if resp[0].status_code != 200:
-            raise Exception(
-                f'Failed to upload to archive.org: {publish_request.file_path}. Status code: {resp[0].status_code} Cause: {resp[0].text}')
-        logging.info(f'Successfully uploaded {publish_request.file_path} to archive.org.')
+
+        def _upload_with_identifier(identifier: str):
+            internetarchive.upload(
+                identifier,
+                files=[publish_request.file_path],
+                metadata=metadata)
+            logging.info(f'Successfully uploaded {publish_request.file_path} to archive.org.')
+
+        try:
+            _upload_with_identifier(publish_request.identifier)
+        except requests.RequestException:
+            i = 1
+            while True:
+                try:
+                    retry_identifier = f'{publish_request.identifier}_{i}'
+                    logging.warning(
+                        f'Could not upload with identifier {publish_request.identifier}. Retrying with: {retry_identifier}')
+                    _upload_with_identifier(retry_identifier)
+                    break
+                except requests.RequestException:
+                    i += 1
