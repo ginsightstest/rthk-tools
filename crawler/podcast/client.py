@@ -7,6 +7,7 @@ from typing import Optional
 import aiofiles
 import aiohttp
 import tqdm
+from aiohttp import ClientError
 
 
 async def get(url: str, sem: asyncio.Semaphore):
@@ -54,22 +55,27 @@ async def get_resumable(url: str,
                 async with aiofiles.open(write_to_file, mode='w'):
                     pass
 
-            async with aiofiles.open(write_to_file, mode='r+b') as f:
-                async with client.get(url, headers={
-                    'Range': f'bytes={os.path.getsize(write_to_file)}-{content_length}'
-                }) as resp:
-                    if resp.status == 416:
-                        logging.debug(f'Download already complete for url: {url}')
-                        local_progress_bar.update(os.path.getsize(write_to_file) / 1024)
-                    else:
-                        start_bytes = int(re.search(r'bytes (\d+)-\d+', resp.headers['Content-Range']).group(1))
-                        logging.debug(f'Resuming download from byte position {start_bytes} for: {url}')
-                        local_progress_bar.update(start_bytes / 1024)
-                        await f.seek(start_bytes)
+            while True:
+                try:
+                    async with aiofiles.open(write_to_file, mode='r+b') as f:
+                        async with client.get(url, headers={
+                            'Range': f'bytes={os.path.getsize(write_to_file)}-{content_length}'
+                        }) as resp:
+                            if resp.status == 416:
+                                logging.debug(f'Download already complete for url: {url}')
+                                local_progress_bar.update(os.path.getsize(write_to_file) / 1024)
+                            else:
+                                start_bytes = int(re.search(r'bytes (\d+)-\d+', resp.headers['Content-Range']).group(1))
+                                logging.debug(f'Resuming download from byte position {start_bytes} for: {url}')
+                                local_progress_bar.update(start_bytes / 1024)
+                                await f.seek(start_bytes)
 
-                        async for chunk in resp.content.iter_chunked(1024):
-                            await f.write(chunk)
-                            local_progress_bar.update(1)
+                                async for chunk in resp.content.iter_chunked(1024):
+                                    await f.write(chunk)
+                                    local_progress_bar.update(1)
+                    break
+                except ClientError:
+                    logging.warning(f'Will retry resumable download: {url}', exc_info=True)
 
             if not progress_bar:
                 local_progress_bar.close()
