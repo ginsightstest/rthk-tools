@@ -30,6 +30,10 @@ async def get_content_length(url: str, sem: asyncio.Semaphore) -> Optional[int]:
                 return int(content_length) if content_length else None
 
 
+class NotResumableError(Exception):
+    pass
+
+
 async def get_resumable(url: str,
                         write_to_file: str,
                         sem: asyncio.Semaphore,
@@ -40,7 +44,7 @@ async def get_resumable(url: str,
                 accept_ranges = resp.headers.get('Accept-Ranges')
                 content_length = resp.headers.get('Content-Length')
                 if not accept_ranges or not 'bytes' in accept_ranges or not content_length:
-                    raise ValueError(f'URL does not support resume: {url}')
+                    raise NotResumableError(f'URL does not support resume: {url}')
 
             local_progress_bar = progress_bar
             if not progress_bar:
@@ -69,6 +73,15 @@ async def get_resumable(url: str,
 
             if not progress_bar:
                 local_progress_bar.close()
+
+
+async def get_bytes(url: str,
+                    sem: asyncio.Semaphore):
+    async with sem:
+        async with aiohttp.ClientSession() as client:
+            async with client.get(url) as resp:
+                bytes = await resp.read()
+                return bytes
 
 
 if __name__ == "__main__":

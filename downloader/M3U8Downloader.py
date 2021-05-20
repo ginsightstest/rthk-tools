@@ -8,6 +8,7 @@ import ffmpeg
 import tqdm
 
 from crawler.podcast import client
+from crawler.podcast.client import NotResumableError
 
 
 class M3U8Downloader:
@@ -54,10 +55,21 @@ class M3U8Downloader:
         basename, ext = os.path.splitext(out_path)
         chunk_ext = f'{ext}.chunk.{chunk_num}'
         chunk_out_path = basename + chunk_ext
-        await client.get_resumable(chunk_url,
-                                   write_to_file=chunk_out_path,
-                                   sem=self._sem,
-                                   progress_bar=progress_bar)
+        try:
+            await client.get_resumable(chunk_url,
+                                       write_to_file=chunk_out_path,
+                                       sem=self._sem,
+                                       progress_bar=progress_bar)
+        except NotResumableError:
+            logging.warning(f'Cannot resume download chunk: {chunk_url}', exc_info=True)
+            if os.path.exists(chunk_out_path):
+                logging.debug(f'Chunk already downloaded: {chunk_url}')
+            else:
+                logging.warning(f'Falling back to non-resumable download: {chunk_url}')
+                raw_bytes = await client.get_bytes(chunk_url, sem=self._sem)
+                async with aiofiles.open(chunk_out_path, mode='wb') as f:
+                    await f.write(raw_bytes)
+
         return chunk_out_path
 
     async def _merge_chunks_and_save_to_file(self, chunk_paths: List[str], out_path: str):
