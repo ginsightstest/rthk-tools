@@ -39,7 +39,7 @@ async def get_resumable(url: str,
             async with client.head(url) as resp:
                 accept_ranges = resp.headers.get('Accept-Ranges')
                 content_length = resp.headers.get('Content-Length')
-                if not 'bytes' in accept_ranges or not content_length:
+                if not accept_ranges or not 'bytes' in accept_ranges or not content_length:
                     raise ValueError(f'URL does not support resume: {url}')
 
             local_progress_bar = progress_bar
