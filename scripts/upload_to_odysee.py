@@ -19,6 +19,7 @@ class UploadToOdyseeArgs(Args):
     csv_in: str
     channel_id: str
     bid: str
+    with_date: bool
 
 
 def configure(parser: argparse.ArgumentParser):
@@ -26,6 +27,7 @@ def configure(parser: argparse.ArgumentParser):
     parser.add_argument('--csv-in', required=True, help='Path to podcast list csv')
     parser.add_argument('--channel-id', required=True, help='Odysee channel id')
     parser.add_argument('--bid', type=str, default="0.001", help='Odysee bid')
+    parser.add_argument('--with-date', default=False, action='store_true', help='Whether to add date to title')
 
 
 def parse_args(raw_args: argparse.Namespace) -> UploadToOdyseeArgs:
@@ -33,12 +35,14 @@ def parse_args(raw_args: argparse.Namespace) -> UploadToOdyseeArgs:
     csv_in = to_abs_path(raw_args.csv_in)
     channel_id = raw_args.channel_id
     bid = raw_args.bid
+    with_date = raw_args.with_date
 
     return UploadToOdyseeArgs(
         upload_dir=upload_dir,
         csv_in=csv_in,
         channel_id=channel_id,
         bid=bid,
+        with_date=with_date
     )
 
 
@@ -71,9 +75,13 @@ def _build_publish_requests(args: UploadToOdyseeArgs) -> List[OdyseePublishApiRe
                 .group(1) \
                 .replace('_', '-')
             date_str = episode.episode_date.strftime('%Y-%m-%d')
+            if args.with_date:
+                title = f'{episode.og_title} | {date_str}'
+            else:
+                title = episode.og_title
             publish_request = OdyseePublishApiRequest(
                 name=f'{programme_name_eng}-{date_str}',
-                title=episode.og_title,
+                title=title,
                 description=episode.og_description,
                 file_path=path,
                 channel_id=args.channel_id,

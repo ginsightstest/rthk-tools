@@ -38,7 +38,9 @@ poetry run python3 main.py \
   upload-to-odysee \
   --upload-dir <directory containing videos to upload> \
   --csv-in <path to podcast list> \
-  --channel-id <odysee channel id>
+  --channel-id <odysee channel id> \
+  [--bid <bid>] \
+  [--with-date]
 ```
 
 ### Convert youtube json to csv
