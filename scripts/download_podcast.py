@@ -27,7 +27,7 @@ def configure(parser: argparse.ArgumentParser):
     parser.add_argument('--csv-in', required=True, help='Path to podcast list csv')
     parser.add_argument('--pid', nargs='+', type=int, help='pids to download')
     parser.add_argument('--year', nargs='*', type=int, default=[], help='restrict to years')
-    parser.add_argument('--parallelism', type=int, default=20, help='How many HTTP requests in parallel')
+    parser.add_argument('--parallelism', type=int, default=100, help='How many HTTP requests in parallel')
 
 
 def parse_args(raw_args: argparse.Namespace) -> DownloadPodcastArgs:
