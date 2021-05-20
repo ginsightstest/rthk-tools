@@ -8,7 +8,7 @@ from typing import List
 from csv_reader_writer.episodes_csv_reader import EpisodesCsvReader
 from model.internetarchive.upload import InternetArchiveUploadApiRequest
 from scripts.args import Args
-from uploader.InternetArchiveUploader import InternetArchiveUploader
+from uploader.internet_archive_uploader import InternetArchiveUploader
 from util.paths import to_abs_path
 
 

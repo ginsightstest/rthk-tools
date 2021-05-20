@@ -9,7 +9,7 @@ from typing import List
 from csv_reader_writer.episodes_csv_reader import EpisodesCsvReader
 from model.odysee.publish import OdyseePublishApiRequest
 from scripts.args import Args
-from uploader.OdyseeUploader import OdyseeUploader
+from uploader.odysee_uploader import OdyseeUploader
 from util.paths import to_abs_path
 
 

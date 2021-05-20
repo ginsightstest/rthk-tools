@@ -7,7 +7,7 @@ from crawler.podcast.programme_info_crawler import ProgrammeInfoCrawler
 from model.odysee.publish import OdyseeChannelCreateApiRequest
 from model.podcast.programme import ProgrammeInfo
 from scripts.args import Args
-from uploader.OdyseeUploader import OdyseeUploader
+from uploader.odysee_uploader import OdyseeUploader
 
 
 @dataclass
