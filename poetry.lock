@@ -1,6 +1,6 @@
 [[package]]
 name = "aiofiles"
-version = "0.7.0dev0"
+version = "0.8.0dev0"
 description = "File support for asyncio."
 category = "main"
 optional = false
@@ -11,7 +11,7 @@ develop = false
 type = "git"
 url = "https://github.com/Tinche/aiofiles.git"
 reference = "master"
-resolved_reference = "26decd33a86f1fa93599a1fad117cd8dead28c5a"
+resolved_reference = "3a66417d89e204aa7fa424b39b858126412e4d3c"
 
 [[package]]
 name = "aiohttp"
@@ -63,6 +63,14 @@ tests = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)"
 tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "mypy", "pytest-mypy-plugins"]
 
 [[package]]
+name = "backports.csv"
+version = "1.0.7"
+description = "Backport of Python 3 csv module"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "beautifulsoup4"
 version = "4.9.3"
 description = "Screen-scraping library"
@@ -92,6 +100,22 @@ description = "Cross-platform colored terminal text."
 category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+
+[[package]]
+name = "contextlib2"
+version = "0.6.0.post1"
+description = "Backports and enhancements for the contextlib module"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+
+[[package]]
+name = "docopt"
+version = "0.6.2"
+description = "Pythonic argument parser, that will make you smile"
+category = "main"
+optional = false
+python-versions = "*"
 
 [[package]]
 name = "ffmpeg-python"
@@ -130,6 +154,42 @@ description = "iniconfig: brain-dead simple config-ini parsing"
 category = "dev"
 optional = false
 python-versions = "*"
+
+[[package]]
+name = "internetarchive"
+version = "2.0.3"
+description = "A Python interface to archive.org."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+"backports.csv" = "<1.07"
+docopt = ">=0.6.0,<0.7.0"
+jsonpatch = ">=0.4"
+requests = ">=2.9.1,<3.0.0"
+schema = ">=0.4.0"
+six = ">=1.13.0,<2.0.0"
+tqdm = ">=4.0.0"
+
+[[package]]
+name = "jsonpatch"
+version = "1.32"
+description = "Apply JSON-Patches (RFC 6902)"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+
+[package.dependencies]
+jsonpointer = ">=1.9"
+
+[[package]]
+name = "jsonpointer"
+version = "2.1"
+description = "Identify specific nodes in a JSON document (RFC 6901)"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "lxml"
@@ -270,6 +330,29 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "requests"
+version = "2.15.1"
+description = "Python HTTP for Humans."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.extras]
+security = ["cryptography (>=1.3.4)", "idna (>=2.0.0)", "pyOpenSSL (>=0.14)"]
+socks = ["PySocks (>=1.5.6,!=1.5.7)", "win-inet-pton"]
+
+[[package]]
+name = "schema"
+version = "0.7.4"
+description = "Simple data validation library"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+contextlib2 = ">=0.5.5"
+
+[[package]]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -345,7 +428,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9.5"
-content-hash = "5ad125d6a04cfedbeb84b4534ae484f0b7a9409eb5ba737bf35f5ccb984ab137"
+content-hash = "761c02fcd0186f7993f44835a1b8be934d62f0e2e02de0ae27ec0db669a41f8d"
 
 [metadata.files]
 aiofiles = []
@@ -400,6 +483,10 @@ attrs = [
     {file = "attrs-21.2.0-py2.py3-none-any.whl", hash = "sha256:149e90d6d8ac20db7a955ad60cf0e6881a3f20d37096140088356da6c716b0b1"},
     {file = "attrs-21.2.0.tar.gz", hash = "sha256:ef6aaac3ca6cd92904cdd0d83f629a15f18053ec84e6432106f7a4d04ae4f5fb"},
 ]
+"backports.csv" = [
+    {file = "backports.csv-1.0.7-py2.py3-none-any.whl", hash = "sha256:21f6e09bab589e6c1f877edbc40277b65e626262a86e69a70137db714eaac5ce"},
+    {file = "backports.csv-1.0.7.tar.gz", hash = "sha256:1277dfff73130b2e106bf3dd347adb3c5f6c4340882289d88f31240da92cbd6d"},
+]
 beautifulsoup4 = [
     {file = "beautifulsoup4-4.9.3-py2-none-any.whl", hash = "sha256:4c98143716ef1cb40bf7f39a8e3eec8f8b009509e74904ba3a7b315431577e35"},
     {file = "beautifulsoup4-4.9.3-py3-none-any.whl", hash = "sha256:fff47e031e34ec82bf17e00da8f592fe7de69aeea38be00523c04623c04fb666"},
@@ -412,6 +499,13 @@ chardet = [
 colorama = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
     {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
+]
+contextlib2 = [
+    {file = "contextlib2-0.6.0.post1-py2.py3-none-any.whl", hash = "sha256:3355078a159fbb44ee60ea80abd0d87b80b78c248643b49aa6d94673b413609b"},
+    {file = "contextlib2-0.6.0.post1.tar.gz", hash = "sha256:01f490098c18b19d2bd5bb5dc445b2054d2fa97f09a4280ba2c5f3c394c8162e"},
+]
+docopt = [
+    {file = "docopt-0.6.2.tar.gz", hash = "sha256:49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491"},
 ]
 ffmpeg-python = [
     {file = "ffmpeg-python-0.2.0.tar.gz", hash = "sha256:65225db34627c578ef0e11c8b1eb528bb35e024752f6f10b78c011f6f64c4127"},
@@ -427,6 +521,18 @@ idna = [
 iniconfig = [
     {file = "iniconfig-1.1.1-py2.py3-none-any.whl", hash = "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3"},
     {file = "iniconfig-1.1.1.tar.gz", hash = "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"},
+]
+internetarchive = [
+    {file = "internetarchive-2.0.3-py2.py3-none-any.whl", hash = "sha256:5ace1a8f33b47af04bf1a54fdba64ab5c108857008f0aa7eb1b5455e3ebfbe0c"},
+    {file = "internetarchive-2.0.3.tar.gz", hash = "sha256:2ce0ab89fea37e5b2311bc7d163955e84f73f6beeac3942e17e9d51ad7cc9ffa"},
+]
+jsonpatch = [
+    {file = "jsonpatch-1.32-py2.py3-none-any.whl", hash = "sha256:26ac385719ac9f54df8a2f0827bb8253aa3ea8ab7b3368457bcdb8c14595a397"},
+    {file = "jsonpatch-1.32.tar.gz", hash = "sha256:b6ddfe6c3db30d81a96aaeceb6baf916094ffa23d7dd5fa2c13e13f8b6e600c2"},
+]
+jsonpointer = [
+    {file = "jsonpointer-2.1-py2.py3-none-any.whl", hash = "sha256:150f80c5badd02c757da6644852f612f88e8b4bc2f9852dcbf557c8738919686"},
+    {file = "jsonpointer-2.1.tar.gz", hash = "sha256:5a34b698db1eb79ceac454159d3f7c12a451a91f6334a4f638454327b7a89962"},
 ]
 lxml = [
     {file = "lxml-4.6.3-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:df7c53783a46febb0e70f6b05df2ba104610f2fb0d27023409734a3ecbb78fb2"},
@@ -590,6 +696,14 @@ python-dateutil = [
 pytz = [
     {file = "pytz-2021.1-py2.py3-none-any.whl", hash = "sha256:eb10ce3e7736052ed3623d49975ce333bcd712c7bb19a58b9e2089d4057d0798"},
     {file = "pytz-2021.1.tar.gz", hash = "sha256:83a4a90894bf38e243cf052c8b58f381bfe9a7a483f6a9cab140bc7f702ac4da"},
+]
+requests = [
+    {file = "requests-2.15.1-py2.py3-none-any.whl", hash = "sha256:ff753b2196cd18b1bbeddc9dcd5c864056599f7a7d9a4fb5677e723efa2b7fb9"},
+    {file = "requests-2.15.1.tar.gz", hash = "sha256:e5659b9315a0610505e050bb7190bf6fa2ccee1ac295f2b760ef9d8a03ebbb2e"},
+]
+schema = [
+    {file = "schema-0.7.4-py2.py3-none-any.whl", hash = "sha256:cf97e4cd27e203ab6bb35968532de1ed8991bce542a646f0ff1d643629a4945d"},
+    {file = "schema-0.7.4.tar.gz", hash = "sha256:fbb6a52eb2d9facf292f233adcc6008cffd94343c63ccac9a1cb1f3e6de1db17"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},

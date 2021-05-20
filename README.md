@@ -31,6 +31,16 @@ poetry run python3 main.py \
   [--year <year> ...]
 ```
 
+### Upload to archive.org
+
+```
+poetry run python3 main.py \
+  upload-to-internet-archive \
+  --upload-dir <directory containing videos to upload> \
+  --csv-in <path to podcast list> \
+  [--with-date]
+```
+
 ### Upload to Odysee
 
 ```
