@@ -5,6 +5,8 @@ import os
 from dataclasses import dataclass
 from typing import List
 
+import ffmpeg
+
 from csv_reader_writer.episodes_csv_reader import EpisodesCsvReader
 from downloader.M3U8Downloader import M3U8Downloader
 from downloader.Mp4Downloader import Mp4Downloader
@@ -57,15 +59,16 @@ def run(args: DownloadPodcastArgs):
 async def _download_and_save_podcast(args: DownloadPodcastArgs):
     sem = asyncio.Semaphore(args.parallelism)
     episodes = _filter_episodes_from_csv(pids=args.pids, years=args.years, csv_in=args.csv_in)
-    m3u8_episodes, mp4_episodes = [], []
     for e in episodes:
         if e.m3u8_url:
-            m3u8_episodes.append(e)
-        else:
-            mp4_episodes.append(e)
+            try:
+                await _download_and_save_m3u8(e, out_dir=args.out_dir, sem=sem)
+                continue
+            except ffmpeg.Error:
+                logging.warning(f'M3U8 download failed: {e.m3u8_url}. Will fallback to mp4', exc_info=True)
 
-    await _download_and_save_m3u8(m3u8_episodes, out_dir=args.out_dir, sem=sem)
-    await _download_and_save_mp4(mp4_episodes, out_dir=args.out_dir, sem=sem)
+        if e.file_url:
+            await _download_and_save_mp4(e, out_dir=args.out_dir, sem=sem)
 
 
 def _filter_episodes_from_csv(pids: List[int], years: List[int], csv_in: str) -> List[Episode]:
@@ -82,24 +85,13 @@ def _filter_episodes_from_csv(pids: List[int], years: List[int], csv_in: str) ->
     return matching_episodes
 
 
-async def _download_and_save_m3u8(m3u8_episodes: List[Episode], out_dir: str, sem: asyncio.Semaphore):
-    m3u8_downloader = M3U8Downloader(sem=sem)
-
-    async def _download(episode: Episode):
-        filename = f'rthk_{episode.pid}_{episode.eid}.mp4'
-        out_path = os.path.join(out_dir, filename)
-        await m3u8_downloader.save_download(episode.m3u8_url, out_path=out_path)
-
-    for episode in m3u8_episodes:
-        await _download(episode)
+async def _download_and_save_m3u8(episode: Episode, out_dir: str, sem: asyncio.Semaphore):
+    filename = f'rthk_{episode.pid}_{episode.eid}.mp4'
+    out_path = os.path.join(out_dir, filename)
+    await M3U8Downloader(sem=sem).save_download(episode.m3u8_url, out_path=out_path)
 
 
-async def _download_and_save_mp4(mp4_episodes: List[Episode], out_dir: str, sem: asyncio.Semaphore):
-    mp4_downloader = Mp4Downloader(sem=sem)
-
-    async def _download(episode: Episode):
-        filename = f'rthk_{episode.pid}_{episode.eid}.mp4'
-        out_path = os.path.join(out_dir, filename)
-        await mp4_downloader.save_download(episode.file_url, out_path=out_path)
-
-    await asyncio.gather(*map(_download, mp4_episodes))
+async def _download_and_save_mp4(episode: Episode, out_dir: str, sem: asyncio.Semaphore):
+    filename = f'rthk_{episode.pid}_{episode.eid}.mp4'
+    out_path = os.path.join(out_dir, filename)
+    await Mp4Downloader(sem=sem).save_download(episode.file_url, out_path=out_path)
