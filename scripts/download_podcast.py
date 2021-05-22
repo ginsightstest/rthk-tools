@@ -5,10 +5,6 @@ import os
 from dataclasses import dataclass
 from typing import List
 
-import aiohttp
-import aiohttp.client_exceptions
-import ffmpeg
-
 from csv_reader_writer.episodes_csv_reader import EpisodesCsvReader
 from downloader.M3U8Downloader import M3U8Downloader
 from downloader.Mp4Downloader import Mp4Downloader
@@ -24,6 +20,7 @@ class DownloadPodcastArgs(Args):
     pids: List[int]
     years: List[int]
     parallelism: int
+    force_mp4: bool
 
 
 def configure(parser: argparse.ArgumentParser):
@@ -32,6 +29,7 @@ def configure(parser: argparse.ArgumentParser):
     parser.add_argument('--pid', nargs='+', type=int, help='pids to download')
     parser.add_argument('--year', nargs='*', type=int, default=[], help='restrict to years')
     parser.add_argument('--parallelism', type=int, default=100, help='How many HTTP requests in parallel')
+    parser.add_argument('--force-mp4', default=False, action='store_true', help='Skip m3u8, force download mp4')
 
 
 def parse_args(raw_args: argparse.Namespace) -> DownloadPodcastArgs:
@@ -40,13 +38,15 @@ def parse_args(raw_args: argparse.Namespace) -> DownloadPodcastArgs:
     pid = raw_args.pid
     years = raw_args.year
     parallelism = raw_args.parallelism
+    force_mp4 = raw_args.force_mp4
 
     return DownloadPodcastArgs(
         out_dir=out_dir,
         csv_in=csv_in,
         pids=pid,
         years=years,
-        parallelism=parallelism
+        parallelism=parallelism,
+        force_mp4=force_mp4
     )
 
 
@@ -62,15 +62,10 @@ async def _download_and_save_podcast(args: DownloadPodcastArgs):
     sem = asyncio.Semaphore(args.parallelism)
     episodes = _filter_episodes_from_csv(pids=args.pids, years=args.years, csv_in=args.csv_in)
     for e in episodes:
-        if e.m3u8_url:
-            try:
-                await _download_and_save_m3u8(e, out_dir=args.out_dir, sem=sem)
-                continue
-            except (aiohttp.client_exceptions.ClientConnectionError, ffmpeg.Error):
-                logging.warning(f'M3U8 download failed: {e.m3u8_url}. Will fallback to mp4', exc_info=True)
-
-            if e.file_url:
-                await _download_and_save_mp4(e, out_dir=args.out_dir, sem=sem)
+        if e.m3u8_url and not args.force_mp4:
+            await _download_and_save_m3u8(e, out_dir=args.out_dir, sem=sem)
+        elif e.file_url:
+            await _download_and_save_mp4(e, out_dir=args.out_dir, sem=sem)
 
 
 def _filter_episodes_from_csv(pids: List[int], years: List[int], csv_in: str) -> List[Episode]:
