@@ -12,7 +12,6 @@ from scripts.upload_to_odysee import UploadToOdyseeArgs
 from scripts.youtube_json_to_csv import YoutubeToJsonArgs
 
 logging.basicConfig()
-logging.getLogger().setLevel(logging.INFO)
 
 
 def main():

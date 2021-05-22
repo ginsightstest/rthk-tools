@@ -1,4 +1,5 @@
 import argparse
+import logging
 import sys
 
 
@@ -15,6 +16,7 @@ class Parser(argparse.ArgumentParser):
 
 def parse_args() -> Args:
     parser = Parser()
+    parser.add_argument('-d', '--debug', default=False, action='store_true', help='Debug mode')
     subparsers = parser.add_subparsers(required=True, dest='subcommand')
 
     from scripts import create_odysee_channel, download_podcast, list_podcast_programmes, upload_to_internet_archive, \
@@ -40,6 +42,7 @@ def parse_args() -> Args:
     )
 
     args = parser.parse_args()
+    _configure_logging(debug_mode=args.debug)
 
     if args.subcommand == 'create-odysee-channel':
         return create_odysee_channel.parse_args(args)
@@ -54,3 +57,10 @@ def parse_args() -> Args:
     elif args.subcommand == 'youtube-json-to-csv':
         return youtube_json_to_csv.parse_args(args)
     raise ValueError(f'Unsupported command: {args.subcommand}')
+
+
+def _configure_logging(debug_mode: bool):
+    if debug_mode:
+        logging.getLogger().setLevel(logging.DEBUG)
+    else:
+        logging.getLogger().setLevel(logging.INFO)
