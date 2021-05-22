@@ -20,6 +20,9 @@ class M3U8Downloader:
             logging.info(f'File already downloaded: {out_path}')
             return
 
+        # Hack: replace stmw.rthk.hk with stmw4.rthk.hk because stmw1, stmw2, stmw3 appear to be down
+        m3u8_url = m3u8_url.replace('stmw.rthk.hk', 'stmw4.rthk.hk')
+
         best_chunklist_url = await self._get_best_chunklist_url(m3u8_url)
         chunk_urls = await self._get_chunk_urls(best_chunklist_url)
         logging.debug(f'Got chunk urls: {chunk_urls}')
