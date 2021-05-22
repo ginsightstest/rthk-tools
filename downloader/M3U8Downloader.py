@@ -20,13 +20,13 @@ class M3U8Downloader:
             logging.info(f'File already downloaded: {out_path}')
             return
 
-        # Hack: replace stmw.rthk.hk with stmw4.rthk.hk because stmw1, stmw2, stmw3 appear to be down
-        m3u8_url = m3u8_url.replace('stmw.rthk.hk', 'stmw4.rthk.hk')
+        # Hack: replace stmw.rthk.hk with stmw3.rthk.hk because it appears most reliable
+        m3u8_url = m3u8_url.replace('stmw.rthk.hk', 'stmw3.rthk.hk')
 
         best_chunklist_url = await self._get_best_chunklist_url(m3u8_url)
         chunk_urls = await self._get_chunk_urls(best_chunklist_url)
         logging.debug(f'Got chunk urls: {chunk_urls}')
-        progress_bar = await self._initialise_progress_bar(m3u8_url=m3u8_url, chunk_urls=chunk_urls)
+        progress_bar = await self._initialise_progress_bar(chunk_urls=chunk_urls)
         chunk_paths = await asyncio.gather(*[self._download_and_save_chunk(i, chunk_url, out_path, progress_bar)
                                              for i, chunk_url in enumerate(chunk_urls)])
         progress_bar.close()
@@ -41,11 +41,10 @@ class M3U8Downloader:
         chunk_urls = await self._parse_m3u8_contents(chunklist_url)
         return chunk_urls
 
-    async def _initialise_progress_bar(self, m3u8_url: str, chunk_urls: List[str]) -> tqdm.tqdm:
+    async def _initialise_progress_bar(self, chunk_urls: List[str]) -> tqdm.tqdm:
         content_lengths = await asyncio.gather(
             *[
-                # HEAD request is cheap, no need mutex
-                client.get_content_length(chunk_url, sem=self._sem)
+                client.get_content_length(chunk_url, sem=self._sem, num_retries=3, timeout=30)
                 for chunk_url in chunk_urls
             ]
         )

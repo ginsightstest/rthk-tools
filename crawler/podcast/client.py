@@ -22,13 +22,19 @@ async def get(url: str, sem: asyncio.Semaphore):
     return text
 
 
-async def get_content_length(url: str, sem: asyncio.Semaphore) -> Optional[int]:
-    async with sem:
-        async with aiohttp.ClientSession() as client:
-            async with client.head(url) as resp:
-                content_length = resp.headers.get('Content-Length')
-                logging.debug(f'Got content length {content_length} for url: {url}')
-                return int(content_length) if content_length else None
+async def get_content_length(url: str, sem: asyncio.Semaphore, num_retries: int = 0, timeout: int = 300) -> Optional[
+    int]:
+    while num_retries > -1:
+        try:
+            async with sem:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=timeout)) as client:
+                    async with client.head(url) as resp:
+                        content_length = resp.headers.get('Content-Length')
+                        logging.debug(f'Got content length {content_length} for url: {url}')
+                        return int(content_length) if content_length else None
+        except asyncio.TimeoutError:
+            num_retries -= 1
+            logging.warning(f'Retrying get content_length: {url}. Remaining retries: {num_retries}')
 
 
 class NotResumableError(Exception):
