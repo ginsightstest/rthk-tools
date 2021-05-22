@@ -44,7 +44,7 @@ class M3U8Downloader:
     async def _initialise_progress_bar(self, chunk_urls: List[str]) -> tqdm.tqdm:
         content_lengths = await asyncio.gather(
             *[
-                client.get_content_length(chunk_url, sem=self._sem, num_retries=3, timeout=30)
+                client.get_content_length(chunk_url, sem=self._sem, num_retries=2, timeout=30)
                 for chunk_url in chunk_urls
             ]
         )

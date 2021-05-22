@@ -5,6 +5,8 @@ import os
 from dataclasses import dataclass
 from typing import List
 
+import aiohttp
+import aiohttp.client_exceptions
 import ffmpeg
 
 from csv_reader_writer.episodes_csv_reader import EpisodesCsvReader
@@ -64,11 +66,11 @@ async def _download_and_save_podcast(args: DownloadPodcastArgs):
             try:
                 await _download_and_save_m3u8(e, out_dir=args.out_dir, sem=sem)
                 continue
-            except ffmpeg.Error:
+            except (aiohttp.client_exceptions.ClientConnectionError, ffmpeg.Error):
                 logging.warning(f'M3U8 download failed: {e.m3u8_url}. Will fallback to mp4', exc_info=True)
 
-        if e.file_url:
-            await _download_and_save_mp4(e, out_dir=args.out_dir, sem=sem)
+            if e.file_url:
+                await _download_and_save_mp4(e, out_dir=args.out_dir, sem=sem)
 
 
 def _filter_episodes_from_csv(pids: List[int], years: List[int], csv_in: str) -> List[Episode]:
