@@ -44,7 +44,8 @@ class NotResumableError(Exception):
 async def get_resumable(url: str,
                         write_to_file: str,
                         sem: asyncio.Semaphore,
-                        progress_bar: Optional[tqdm.tqdm] = None):
+                        progress_bar: Optional[tqdm.tqdm] = None,
+                        tqdm_local_position: Optional[int] = None):
     async with sem:
         async with aiohttp.ClientSession() as client:
             async with client.head(url) as resp:
@@ -55,7 +56,9 @@ async def get_resumable(url: str,
 
             local_progress_bar = progress_bar
             if not progress_bar:
-                local_progress_bar = tqdm.tqdm(total=int(content_length) / 1024, unit='KB')
+                local_progress_bar = tqdm.tqdm(total=int(content_length) / 1024,
+                                               unit='KB',
+                                               position=tqdm_local_position)
 
             if not os.path.exists(write_to_file):
                 async with aiofiles.open(write_to_file, mode='w'):
