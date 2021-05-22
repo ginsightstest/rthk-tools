@@ -18,6 +18,7 @@ class DownloadPodcastArgs(Args):
     out_dir: str
     csv_in: str
     pids: List[int]
+    eids: List[int]
     years: List[int]
     parallelism: int
     force_mp4: bool
@@ -27,7 +28,11 @@ def configure(parser: argparse.ArgumentParser):
     parser.add_argument('--out-dir', required=True, help='Directory to store downloaded files')
     parser.add_argument('--csv-in', required=True, help='Path to podcast list csv')
     parser.add_argument('--pid', nargs='+', type=int, help='pids to download')
-    parser.add_argument('--year', nargs='*', type=int, default=[], help='restrict to years')
+
+    eids_or_years = parser.add_mutually_exclusive_group()
+    eids_or_years.add_argument('--eid', nargs='+', type=int, default=[], help='eids to download')
+    eids_or_years.add_argument('--year', nargs='*', type=int, default=[], help='restrict to years')
+
     parser.add_argument('--parallelism', type=int, default=100, help='How many HTTP requests in parallel')
     parser.add_argument('--force-mp4', default=False, action='store_true', help='Skip m3u8, force download mp4')
 
@@ -36,6 +41,7 @@ def parse_args(raw_args: argparse.Namespace) -> DownloadPodcastArgs:
     out_dir = to_abs_path(raw_args.out_dir)
     csv_in = to_abs_path(raw_args.csv_in)
     pid = raw_args.pid
+    eid = raw_args.eid
     years = raw_args.year
     parallelism = raw_args.parallelism
     force_mp4 = raw_args.force_mp4
@@ -44,6 +50,7 @@ def parse_args(raw_args: argparse.Namespace) -> DownloadPodcastArgs:
         out_dir=out_dir,
         csv_in=csv_in,
         pids=pid,
+        eids=eid,
         years=years,
         parallelism=parallelism,
         force_mp4=force_mp4
@@ -60,7 +67,7 @@ def run(args: DownloadPodcastArgs):
 
 async def _download_and_save_podcast(args: DownloadPodcastArgs):
     sem = asyncio.Semaphore(args.parallelism)
-    episodes = _filter_episodes_from_csv(pids=args.pids, years=args.years, csv_in=args.csv_in)
+    episodes = _filter_episodes_from_csv(pids=args.pids, eids=args.eids, years=args.years, csv_in=args.csv_in)
 
     m3u8_episodes, mp4_episodes = [], []
     for e in episodes:
@@ -73,9 +80,11 @@ async def _download_and_save_podcast(args: DownloadPodcastArgs):
     await _download_and_save_mp4(mp4_episodes, out_dir=args.out_dir, sem=sem)
 
 
-def _filter_episodes_from_csv(pids: List[int], years: List[int], csv_in: str) -> List[Episode]:
+def _filter_episodes_from_csv(pids: List[int], eids: List[int], years: List[int], csv_in: str) -> List[Episode]:
     def _matches_criteria(episode: Episode) -> bool:
         if not episode.pid in pids:
+            return False
+        if eids and not episode.eid in eids:
             return False
         if years and not episode.episode_date.year in years:
             return False

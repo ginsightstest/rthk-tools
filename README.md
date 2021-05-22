@@ -28,7 +28,7 @@ poetry run python3 main.py \
   --out-dir <directory path for writing videos>
   --csv-in <path to podcast list>
   [--pid <pid> ...] \
-  [--year <year> ...]
+  ([--eid <eid> ...] | [--year <year> ...])
 ```
 
 ### Upload to archive.org
