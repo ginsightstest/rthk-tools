@@ -1,4 +1,5 @@
 import argparse
+import collections
 import glob
 import os
 import re
@@ -51,6 +52,7 @@ def _upload_to_internet_archive(args: UploadToInternetArchiveArgs):
 def _build_publish_requests(args: UploadToInternetArchiveArgs) -> List[InternetArchiveUploadApiRequest]:
     episodes = EpisodesCsvReader().read_to_episodes(args.csv_in)
     episodes_by_pid_eid = {(e.pid, e.eid): e for e in episodes}
+    date_collision_counter = collections.Counter()
     publish_requests = []
     for path in sorted(glob.iglob(os.path.join(args.upload_dir, 'rthk_*_*.*')), reverse=True):
         filename = path.rsplit('/', 1)[1]
@@ -58,17 +60,25 @@ def _build_publish_requests(args: UploadToInternetArchiveArgs) -> List[InternetA
         if match:
             pid, eid = int(match.group(1)), int(match.group(2))
             episode = episodes_by_pid_eid[(pid, eid)]
+            date_collision_counter[episode.episode_date] += 1
+
             programme_name_eng = re.fullmatch(r'https://podcast.rthk.hk/podcast/(.+)\.xml', episode.rss_url) \
                 .group(1) \
                 .replace('_', '-')
             date_str = episode.episode_date.strftime('%Y-%m-%d')
             mediatype = 'movies' if episode.format == 'video' else 'audio'
+
+            identifier = f'rthk-podcast-{programme_name_eng}-{date_str}'
+            if date_collision_counter[episode.episode_date] > 1:
+                identifier = f'{identifier}-{date_collision_counter[episode.episode_date]}'
+
             if args.with_date:
                 title = f'{episode.og_title} | {date_str}'
             else:
                 title = episode.og_title
+
             publish_request = InternetArchiveUploadApiRequest(
-                identifier=f'rthk-podcast-{programme_name_eng}-{date_str}',
+                identifier=identifier,
                 title=title,
                 description=episode.og_description,
                 mediatype=mediatype,
