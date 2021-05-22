@@ -1,4 +1,6 @@
 import asyncio
+import logging
+import os
 
 from crawler.podcast.client import get_resumable
 
@@ -9,4 +11,12 @@ class Mp4Downloader:
         self._sem = sem
 
     async def save_download(self, mp4_url: str, out_path: str):
-        await get_resumable(mp4_url, write_to_file=out_path, sem=self._sem)
+        if os.path.exists(out_path):
+            logging.info(f'File already downloaded: {out_path}')
+            return
+
+        basename, ext = os.path.splitext(out_path)
+        tmp_ext = f'{ext}.tmp'
+        tmp_out_path = basename + tmp_ext
+        await get_resumable(mp4_url, write_to_file=tmp_out_path, sem=self._sem)
+        os.rename(src=tmp_out_path, dst=out_path)
