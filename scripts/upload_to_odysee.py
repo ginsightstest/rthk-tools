@@ -65,7 +65,7 @@ def _build_publish_requests(args: UploadToOdyseeArgs) -> List[OdyseePublishApiRe
     episodes = EpisodesCsvReader().read_to_episodes(args.csv_in)
     episodes_by_pid_eid = {(e.pid, e.eid): e for e in episodes}
     publish_requests = []
-    for path in glob.iglob(os.path.join(args.upload_dir, 'rthk_*_*.*')):
+    for path in sorted(glob.iglob(os.path.join(args.upload_dir, 'rthk_*_*.*')), reverse=True):
         filename = path.rsplit('/', 1)[1]
         match = re.fullmatch(r'rthk_(\d+)_(\d+)\.[^.]+', filename)
         if match:
