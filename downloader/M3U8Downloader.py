@@ -42,7 +42,7 @@ class M3U8Downloader:
         content_lengths = await asyncio.gather(
             *[
                 # HEAD request is cheap, no need mutex
-                client.get_content_length(chunk_url, sem=asyncio.Semaphore())
+                client.get_content_length(chunk_url, sem=self._sem)
                 for chunk_url in chunk_urls
             ]
         )
