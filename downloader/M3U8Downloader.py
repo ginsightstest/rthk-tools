@@ -65,7 +65,7 @@ class M3U8Downloader:
         except NotResumableError:
             logging.warning(f'Cannot resume download chunk: {chunk_url}')
             if os.path.exists(chunk_out_path):
-                logging.debug(f'Chunk already downloaded: {chunk_url}')
+                logging.info(f'Chunk already downloaded: {chunk_url}')
             else:
                 logging.warning(f'Falling back to non-resumable download: {chunk_url}')
                 raw_bytes = await client.get_bytes(chunk_url,
