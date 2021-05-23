@@ -27,11 +27,11 @@ class DownloadPodcastArgs(Args):
 def configure(parser: argparse.ArgumentParser):
     parser.add_argument('--out-dir', required=True, help='Directory to store downloaded files')
     parser.add_argument('--csv-in', required=True, help='Path to podcast list csv')
-    parser.add_argument('--pid', nargs='+', type=int, help='pids to download')
+    parser.add_argument('--pid', nargs='+', action='extend', type=int, help='pids to download')
 
     eids_or_years = parser.add_mutually_exclusive_group()
-    eids_or_years.add_argument('--eid', nargs='+', type=int, default=[], help='eids to download')
-    eids_or_years.add_argument('--year', nargs='*', type=int, default=[], help='restrict to years')
+    eids_or_years.add_argument('--eid', nargs='+', action='extend', type=int, default=[], help='eids to download')
+    eids_or_years.add_argument('--year', nargs='*', action='extend', type=int, default=[], help='restrict to years')
 
     parser.add_argument('--parallelism', type=int, default=100, help='How many HTTP requests in parallel')
     parser.add_argument('--force-mp4', default=False, action='store_true', help='Skip m3u8, force download mp4')

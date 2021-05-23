@@ -41,8 +41,9 @@ def configure(parser: argparse.ArgumentParser):
     parser.add_argument('--csv-out', required=True, help='Path for output csv file')
     parser.add_argument('--incremental', default=False, action='store_true', help='Whether to save csvs per pid')
     parser.add_argument('--parallelism', type=int, default=20, help='How many HTTP requests in parallel')
-    parser.add_argument('--lang', nargs='*', choices=ALL_LANGUAGES, default=ALL_LANGUAGES, help='Languages to crawl')
-    parser.add_argument('--pid', nargs='*', type=int, default=[], help='pids to crawl')
+    parser.add_argument('--lang', nargs='*', action='extend', choices=ALL_LANGUAGES, default=ALL_LANGUAGES,
+                        help='Languages to crawl')
+    parser.add_argument('--pid', nargs='*', action='extend', type=int, default=[], help='pids to crawl')
 
 
 def parse_args(raw_args: argparse.Namespace) -> ListPodcastProgrammesArgs:
