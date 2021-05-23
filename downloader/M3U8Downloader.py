@@ -63,7 +63,7 @@ class M3U8Downloader:
                                        sem=self._sem,
                                        progress_bar=progress_bar)
         except NotResumableError:
-            logging.warning(f'Cannot resume download chunk: {chunk_url}', exc_info=True)
+            logging.warning(f'Cannot resume download chunk: {chunk_url}')
             if os.path.exists(chunk_out_path):
                 logging.debug(f'Chunk already downloaded: {chunk_url}')
             else:
