@@ -3,7 +3,7 @@ import logging
 import aiohttp
 import ujson
 
-from model.odysee.publish import OdyseeChannelCreateApiRequest, OdyseePublishApiRequest
+from model.odysee.publish import OdyseeChannelCreateApiRequest, OdyseeClaimSearchApiRequest, OdyseePublishApiRequest
 
 
 class OdyseeUploader:
@@ -24,6 +24,23 @@ class OdyseeUploader:
                 else:
                     logging.info(
                         f'Successfully created channel {channel_create_request.name} to Odysee. Fee: {j["result"]["total_fee"]} Transaction id: {j["result"]["txid"]}')
+
+    async def search(self, claim_search_request: OdyseeClaimSearchApiRequest) -> dict:
+        data = ujson.dumps({
+            'method': 'claim_search',
+            'params': {k: v for k, v in claim_search_request._asdict().items() if v is not None}
+        })
+        async with aiohttp.ClientSession() as client:
+            async with client.post('http://localhost:5279',
+                                   data=data) as resp:
+                j = await resp.json()
+                if 'error' in j:
+                    stacktrace = '\n'.join(j['error']['data']['traceback'])
+                    logging.fatal(
+                        f'Failed to perform claim search on Odysee. Cause: {stacktrace}')
+                    exit(-1)
+                else:
+                    return j['result']
 
     async def upload(self, publish_request: OdyseePublishApiRequest):
         data = ujson.dumps({

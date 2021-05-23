@@ -9,6 +9,15 @@ poetry run python3 main.py \
   [--bid <bid>]
 ```
 
+### List Odysee videos
+
+```
+poetry run python3 main.py \
+  list-odysee-videos \
+  --channel-id <Odysee channel id>
+  --csv-out <path for writing output csv>
+```
+
 ### Get podcast list
 
 ```

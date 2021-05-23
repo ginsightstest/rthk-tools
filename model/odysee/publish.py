@@ -23,6 +23,18 @@ class OdyseeChannelCreateApiRequest(NamedTuple):
     website_url: Optional[str] = None
 
 
+class OdyseeClaimSearchApiRequest(NamedTuple):
+    name: Optional[str] = None
+    text: Optional[str] = None
+    claim_id: Optional[str] = None
+    claim_ids: List[str] = []
+    channel: Optional[str] = None
+    channel_ids: List[str] = []
+    not_channel_ids: List[str] = []
+    page: Optional[int] = None
+    page_size: Optional[int] = None
+
+
 class OdyseePublishApiRequest(NamedTuple):
     name: str
     title: str
