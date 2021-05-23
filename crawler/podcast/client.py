@@ -100,14 +100,19 @@ async def get_bytes(url: str,
             if not progress_bar:
                 local_progress_bar = tqdm.tqdm(unit='KB',
                                                position=tqdm_local_position)
-            async with aiofiles.tempfile.TemporaryFile(mode='w+b') as f:
-                async with client.get(url) as resp:
-                    async for chunk in resp.content.iter_chunked(1024):
-                        await f.write(chunk)
-                        local_progress_bar.update(1)
+            while True:
+                try:
+                    async with aiofiles.tempfile.TemporaryFile(mode='w+b') as f:
+                        async with client.get(url) as resp:
+                            async for chunk in resp.content.iter_chunked(1024):
+                                await f.write(chunk)
+                                local_progress_bar.update(1)
 
-                await f.seek(0)
-                raw_bytes = await f.read()
+                        await f.seek(0)
+                        raw_bytes = await f.read()
+                    break
+                except ClientError:
+                    logging.warning(f'Will retry non-resumable download: {url}', exc_info=True)
 
             if not progress_bar:
                 local_progress_bar.close()
