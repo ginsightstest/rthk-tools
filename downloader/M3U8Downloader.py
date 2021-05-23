@@ -68,7 +68,9 @@ class M3U8Downloader:
                 logging.debug(f'Chunk already downloaded: {chunk_url}')
             else:
                 logging.warning(f'Falling back to non-resumable download: {chunk_url}')
-                raw_bytes = await client.get_bytes(chunk_url, sem=self._sem)
+                raw_bytes = await client.get_bytes(chunk_url,
+                                                   sem=self._sem,
+                                                   progress_bar=progress_bar)
                 async with aiofiles.open(chunk_out_path, mode='wb') as f:
                     await f.write(raw_bytes)
 

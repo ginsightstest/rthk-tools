@@ -91,12 +91,28 @@ async def get_resumable(url: str,
 
 
 async def get_bytes(url: str,
-                    sem: asyncio.Semaphore):
+                    sem: asyncio.Semaphore,
+                    progress_bar: Optional[tqdm.tqdm] = None,
+                    tqdm_local_position: Optional[int] = None) -> bytes:
     async with sem:
         async with aiohttp.ClientSession() as client:
-            async with client.get(url) as resp:
-                bytes = await resp.read()
-                return bytes
+            local_progress_bar = progress_bar
+            if not progress_bar:
+                local_progress_bar = tqdm.tqdm(unit='KB',
+                                               position=tqdm_local_position)
+            async with aiofiles.tempfile.TemporaryFile(mode='w+b') as f:
+                async with client.get(url) as resp:
+                    async for chunk in resp.content.iter_chunked(1024):
+                        await f.write(chunk)
+                        local_progress_bar.update(1)
+
+                await f.seek(0)
+                raw_bytes = await f.read()
+
+            if not progress_bar:
+                local_progress_bar.close()
+
+            return raw_bytes
 
 
 if __name__ == "__main__":
