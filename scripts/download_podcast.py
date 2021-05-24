@@ -76,7 +76,8 @@ async def _download_and_save_podcast(args: DownloadPodcastArgs):
         elif e.file_url:
             mp4_episodes.append(e)
 
-    await _download_and_save_m3u8(m3u8_episodes, out_dir=args.out_dir, sem=sem)
+    failed_episodes = await _download_and_save_m3u8(m3u8_episodes, out_dir=args.out_dir, sem=sem)
+    mp4_episodes += failed_episodes
     await _download_and_save_mp4(mp4_episodes, out_dir=args.out_dir, sem=sem)
 
 
@@ -96,7 +97,7 @@ def _filter_episodes_from_csv(pids: List[int], eids: List[int], years: List[int]
     return matching_episodes
 
 
-async def _download_and_save_m3u8(episodes: List[Episode], out_dir: str, sem: asyncio.Semaphore):
+async def _download_and_save_m3u8(episodes: List[Episode], out_dir: str, sem: asyncio.Semaphore) -> List[Episode]:
     m3u8_downloader = M3U8Downloader(sem=sem)
 
     async def _download(episode: Episode):
@@ -104,8 +105,18 @@ async def _download_and_save_m3u8(episodes: List[Episode], out_dir: str, sem: as
         out_path = os.path.join(out_dir, filename)
         await m3u8_downloader.save_download(episode.m3u8_url, out_path=out_path)
 
+    failed_episodes = []
+
     for episode in episodes:
-        await _download(episode)
+        try:
+            await _download(episode)
+        except Exception:
+            logging.warning(
+                f'Failed to download m3u8 for episode pid={episode.pid} eid={episode.eid}, will fall back to mp4',
+                exc_info=True)
+            failed_episodes.append(episode)
+
+    return failed_episodes
 
 
 async def _download_and_save_mp4(episodes: List[Episode], out_dir: str, sem: asyncio.Semaphore):
