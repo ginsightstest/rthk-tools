@@ -21,6 +21,7 @@ class UploadToOdyseeArgs(Args):
     channel_id: str
     bid: str
     with_date: bool
+    pause: int
 
 
 def configure(parser: argparse.ArgumentParser):
@@ -29,6 +30,7 @@ def configure(parser: argparse.ArgumentParser):
     parser.add_argument('--channel-id', required=True, help='Odysee channel id')
     parser.add_argument('--bid', type=str, default="0.001", help='Odysee bid')
     parser.add_argument('--with-date', default=False, action='store_true', help='Whether to add date to title')
+    parser.add_argument('--pause', type=float, default=0.0, help='How many seconds to pause in between uploads')
 
 
 def parse_args(raw_args: argparse.Namespace) -> UploadToOdyseeArgs:
@@ -37,13 +39,15 @@ def parse_args(raw_args: argparse.Namespace) -> UploadToOdyseeArgs:
     channel_id = raw_args.channel_id
     bid = raw_args.bid
     with_date = raw_args.with_date
+    pause = raw_args.pause
 
     return UploadToOdyseeArgs(
         upload_dir=upload_dir,
         csv_in=csv_in,
         channel_id=channel_id,
         bid=bid,
-        with_date=with_date
+        with_date=with_date,
+        pause=pause
     )
 
 
@@ -60,6 +64,7 @@ async def _upload_to_odysee(args: UploadToOdyseeArgs):
     odysee_uploader = OdyseeUploader()
     for publish_request in publish_requests:
         await odysee_uploader.upload(publish_request)
+        await asyncio.sleep(args.pause)
 
 
 def _build_publish_requests(args: UploadToOdyseeArgs) -> List[OdyseePublishApiRequest]:
