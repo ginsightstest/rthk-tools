@@ -15,6 +15,7 @@ poetry run python3 main.py \
 poetry run python3 main.py \
   list-odysee-videos \
   --channel-id <Odysee channel id>
+  --csv-in <path to podcast list>
   --csv-out <path for writing output csv>
 ```
 
