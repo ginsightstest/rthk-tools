@@ -123,7 +123,8 @@ async def _download_and_save_mp4(episodes: List[Episode], out_dir: str, sem: asy
     mp4_downloader = Mp4Downloader(sem=sem)
 
     async def _download(episode: Episode, tqdm_local_position: int):
-        filename = f'rthk_{episode.pid}_{episode.eid}.mp4'
+        basename, ext = os.path.splitext(episode.file_url)
+        filename = f'rthk_{episode.pid}_{episode.eid}{ext}'
         out_path = os.path.join(out_dir, filename)
         await mp4_downloader.save_download(episode.file_url, out_path=out_path, tqdm_local_position=tqdm_local_position)
 
