@@ -1,11 +1,13 @@
 import logging
 
-from scripts import create_odysee_channel, download_podcast, list_odysee_videos, list_podcast_programmes, \
+from scripts import create_odysee_channel, create_odysee_readme, download_podcast, list_odysee_videos, \
+    list_podcast_programmes, \
     upload_to_internet_archive, \
     upload_to_odysee, \
     youtube_json_to_csv
 from scripts.args import parse_args
 from scripts.create_odysee_channel import CreateOdyseeChannelArgs
+from scripts.create_odysee_readme import CreateOdyseeReadmeArgs
 from scripts.download_podcast import DownloadPodcastArgs
 from scripts.list_odysee_videos import ListOdyseeVideosArgs
 from scripts.list_podcast_programmes import ListPodcastProgrammesArgs
@@ -21,6 +23,9 @@ def main():
 
     if isinstance(args, CreateOdyseeChannelArgs):
         create_odysee_channel.run(args)
+
+    if isinstance(args, CreateOdyseeReadmeArgs):
+        create_odysee_readme.run(args)
 
     if isinstance(args, DownloadPodcastArgs):
         download_podcast.run(args)

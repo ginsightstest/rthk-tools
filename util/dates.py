@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 
 
@@ -22,6 +22,10 @@ def ymd_to_date(ymd_str: str) -> Optional[datetime]:
     except:
         logging.warning(f"Failed to parse ymd string: {ymd_str}", exc_info=True)
         return None
+
+
+def date_to_ymd(dt: date) -> str:
+    return dt.strftime('%Y-%m-%d')
 
 
 if __name__ == "__main__":

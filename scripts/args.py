@@ -19,12 +19,16 @@ def parse_args() -> Args:
     parser.add_argument('-d', '--debug', default=False, action='store_true', help='Debug mode')
     subparsers = parser.add_subparsers(required=True, dest='subcommand')
 
-    from scripts import create_odysee_channel, download_podcast, list_odysee_videos, list_podcast_programmes, \
+    from scripts import create_odysee_channel, create_odysee_readme, download_podcast, list_odysee_videos, \
+        list_podcast_programmes, \
         upload_to_internet_archive, \
         upload_to_odysee, \
         youtube_json_to_csv
     create_odysee_channel.configure(
         subparsers.add_parser('create-odysee-channel', help='Create Odysee channel')
+    )
+    create_odysee_readme.configure(
+        subparsers.add_parser('create-odysee-readme', help='Create Odysee readme')
     )
     download_podcast.configure(
         subparsers.add_parser('download-podcast', help='Download podcast files')
@@ -50,6 +54,8 @@ def parse_args() -> Args:
 
     if args.subcommand == 'create-odysee-channel':
         return create_odysee_channel.parse_args(args)
+    elif args.subcommand == 'create-odysee-readme':
+        return create_odysee_readme.parse_args(args)
     elif args.subcommand == 'download-podcast':
         return download_podcast.parse_args(args)
     elif args.subcommand == 'list-odysee-videos':

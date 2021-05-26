@@ -9,6 +9,15 @@ poetry run python3 main.py \
   [--bid <bid>]
 ```
 
+### Create Odysee readme
+
+```
+poetry run python3 main.py \
+  create-odysee-readme \
+  --backup-table-csv-in <path to backup table csv> \
+  --md-out <path for writing markdown readme csv> \
+```
+
 ### List Odysee videos
 
 ```

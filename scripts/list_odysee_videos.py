@@ -124,7 +124,7 @@ def _merge_into_backup_table(odysee_video_infos: List[OdyseeVideoInfo], episodes
             potential_eids_by_description = eids_by_description[re.sub(r'\s+', '', odysee_video_info.description)]
         potential_eids_by_date = eids_by_date[odysee_video_info.dt]
 
-        eids_set = potential_eids_by_title
+        eids_set = set(potential_eids_by_title)
         if len(eids_set) > 1 and potential_eids_by_description:
             eids_set &= potential_eids_by_description
         if len(eids_set) > 1:
